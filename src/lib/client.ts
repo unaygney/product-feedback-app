@@ -7,5 +7,11 @@ import type { AppRouter } from '@/server'
  * @see https://jstack.app/docs/backend/api-client
  */
 export const client = createClient<AppRouter>({
-  baseUrl: 'http://localhost:3000/api',
+  baseUrl: `${getBaseUrl()}/api`,
 })
+
+function getBaseUrl() {
+  // 👇 Adjust for wherever you deploy
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
+  return `http://localhost:3000`
+}
