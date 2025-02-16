@@ -11,7 +11,8 @@
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "prepare": "husky"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
@@ -34,6 +35,8 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240815.0",
+    "@commitlint/cli": "^19.7.1",
+    "@commitlint/config-conventional": "^19.7.1",
     "@types/node": "^22.10.6",
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",
@@ -42,6 +45,8 @@
     "eslint": "^9.18.0",
     "eslint-config-next": "^15.1.4",
     "eslint-plugin-drizzle": "^0.2.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
     "postcss": "^8",
     "tailwindcss": "^4.0.0",
     "typescript": "^5"
