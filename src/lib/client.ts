@@ -13,7 +13,7 @@ export const client = createClient<AppRouter>({
 function getBaseUrl() {
   // 👇 Adjust for wherever you deploy
   if (process.env.NODE_ENV === 'production') {
-    return `${process.env.BACKEND_URL}`
+    return `${process.env.NEXT_PUBLIC_BACKEND_URL}`
   } else {
     return 'http://localhost:8080'
   }
