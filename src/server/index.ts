@@ -1,5 +1,5 @@
-import { j } from "./jstack"
-import { postRouter } from "./routers/post-router"
+import { j } from './jstack'
+import { postRouter } from './routers/post-router'
 
 /**
  * This is your base API.
@@ -9,7 +9,7 @@ import { postRouter } from "./routers/post-router"
  */
 const api = j
   .router()
-  .basePath("/api")
+  .basePath('/api')
   .use(j.defaults.cors)
   .onError(j.defaults.errorHandler)
 
