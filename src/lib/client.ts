@@ -12,6 +12,9 @@ export const client = createClient<AppRouter>({
 
 function getBaseUrl() {
   // 👇 Adjust for wherever you deploy
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
-  return `http://localhost:3000`
+  if (process.env.NODE_ENV === 'production') {
+    return `${process.env.BACKEND_URL}`
+  } else {
+    return 'http://localhost:8080'
+  }
 }
