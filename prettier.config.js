@@ -1,5 +1,5 @@
 /** @type {import('prettier').Config & import('prettier-plugin-tailwindcss').PluginOptions} */
-export default {
+module.exports = {
   $schema: 'https://json.schemastore.org/prettierrc',
   arrowParens: 'always',
   bracketSpacing: true,
