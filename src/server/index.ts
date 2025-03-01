@@ -1,3 +1,7 @@
+import { cors } from 'hono/cors'
+
+import { auth } from '@/lib/auth'
+
 import { j } from './jstack'
 import { postRouter } from './routers/post-router'
 
@@ -10,7 +14,17 @@ import { postRouter } from './routers/post-router'
 const api = j
   .router()
   .basePath('/api')
-  .use(j.defaults.cors)
+  .on(['POST', 'GET'], '/auth/**', (c) => auth.handler(c.req.raw))
+  .use(
+    cors({
+      origin: '*',
+      allowHeaders: ['x-is-superjson', 'Content-Type', 'Authorization'],
+      exposeHeaders: ['x-is-superjson', 'Content-Length'],
+      allowMethods: ['GET', 'POST', 'OPTIONS' /* , "DELETE", "PUT" */],
+      credentials: true,
+      maxAge: 600,
+    })
+  )
   .onError(j.defaults.errorHandler)
 
 /**
