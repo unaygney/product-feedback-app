@@ -17,7 +17,12 @@ const api = j
   .on(['POST', 'GET'], '/auth/**', (c) => auth.handler(c.req.raw))
   .use(
     cors({
-      origin: '*',
+      origin: [
+        'http://localhost:3000',
+        'http://localhost:8080',
+        'https://product-feedback-app-pied.vercel.app',
+        'https://97aa9034-product-feedback-app.bery.workers.dev',
+      ],
       allowHeaders: ['x-is-superjson', 'Content-Type', 'Authorization'],
       exposeHeaders: ['x-is-superjson', 'Content-Length'],
       allowMethods: ['GET', 'POST', 'OPTIONS' /* , "DELETE", "PUT" */],
