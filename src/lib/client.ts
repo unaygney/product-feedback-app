@@ -10,7 +10,11 @@ export const client = createClient<AppRouter>({
   baseUrl: `${getBaseUrl()}/api`,
 })
 
-function getBaseUrl() {
+/**
+ * Get the base URL for the API
+ */
+
+export function getBaseUrl() {
   // 👇 Adjust for wherever you deploy
   if (process.env.NODE_ENV === 'production') {
     return `${process.env.NEXT_PUBLIC_BACKEND_URL}`
