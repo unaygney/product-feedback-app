@@ -1,8 +1,12 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { dataTagErrorSymbol } from '@tanstack/react-query'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useQueryState } from 'nuqs'
 import { useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
 
 import { authClient } from '@/lib/auth-client'
 import {
@@ -18,6 +22,10 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function AuthPage() {
+  const [tabs, setTabs] = useQueryState('')
+  const router = useRouter()
+
+  // Login Form
   const {
     register: loginRegister,
     handleSubmit: handleLoginSubmit,
@@ -26,6 +34,7 @@ export default function AuthPage() {
     resolver: zodResolver(loginSchema),
   })
 
+  // Register Form
   const {
     register: registerFormRegister,
     handleSubmit: handleRegisterSubmit,
@@ -34,33 +43,49 @@ export default function AuthPage() {
     resolver: zodResolver(registerSchema),
   })
 
-  const onLogin = (data: LoginInput) => {
-    console.log('Login attempt:', data)
-  }
-
-  const onRegister = async (formData: RegisterInput) => {
-    const { data, error } = await authClient.signUp.email(
+  const onLogin = async (formData: LoginInput) => {
+    const loadingToastId = toast.loading('Signing in...')
+    await authClient.signIn.email(
       {
         email: formData.email,
         password: formData.password,
-        name: 'User',
-        callbackURL: '/',
       },
       {
-        onRequest: (ctx) => {
-          console.log(ctx)
-        },
         onSuccess: (ctx) => {
-          //redirect to the dashboard or sign in page
-          console.log(ctx)
+          toast.dismiss(loadingToastId)
+          toast.success(`Welcome back, ${ctx.data.user.name}. Redirecting...`)
+          // router.push('/')
         },
         onError: (ctx) => {
-          console.log(ctx.error)
-          alert(ctx.error.message)
+          toast.remove(loadingToastId)
+          toast.error(ctx.error.message)
         },
       }
     )
-    console.log(data, error)
+  }
+
+  const onRegister = async (formData: RegisterInput) => {
+    const loadingToastId = toast.loading('Creating account...')
+
+    await authClient.signUp.email(
+      {
+        email: formData.email,
+        password: formData.password,
+        name: formData.name,
+        callbackURL: '/',
+      },
+      {
+        onSuccess: () => {
+          toast.dismiss(loadingToastId)
+          toast.success('Account created. Redirecting...')
+          router.push('/')
+        },
+        onError: (ctx) => {
+          toast.remove(loadingToastId)
+          toast.error(ctx.error.message)
+        },
+      }
+    )
   }
 
   return (
@@ -76,7 +101,11 @@ export default function AuthPage() {
                 Sign in to your account or create a new one
               </p>
             </div>
-            <Tabs defaultValue="login" className="space-y-4">
+            <Tabs
+              defaultValue={tabs ?? 'login'}
+              className="space-y-4"
+              onValueChange={(value) => setTabs(value)}
+            >
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login">Login</TabsTrigger>
                 <TabsTrigger value="register">Register</TabsTrigger>
@@ -93,6 +122,7 @@ export default function AuthPage() {
                       id="email"
                       type="email"
                       placeholder="m@example.com"
+                      autoComplete="email"
                     />
                     {loginErrors.email && (
                       <p className="text-sm text-red-500">
@@ -106,6 +136,8 @@ export default function AuthPage() {
                       {...loginRegister('password')}
                       id="password"
                       type="password"
+                      placeholder="******"
+                      autoComplete="current-password"
                     />
                     {loginErrors.password && (
                       <p className="text-sm text-red-500">
@@ -135,12 +167,27 @@ export default function AuthPage() {
                   className="space-y-4"
                 >
                   <div className="space-y-2">
+                    <Label htmlFor="register-name">Full Name</Label>
+                    <Input
+                      {...registerFormRegister('name')}
+                      id="register-name"
+                      type="text"
+                      placeholder="John Doe"
+                    />
+                    {registerErrors.name && (
+                      <p className="text-sm text-red-500">
+                        {registerErrors.name.message}
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="register-email">Email</Label>
                     <Input
                       {...registerFormRegister('email')}
                       id="register-email"
                       type="email"
                       placeholder="m@example.com"
+                      autoComplete="email"
                     />
                     {registerErrors.email && (
                       <p className="text-sm text-red-500">
@@ -154,6 +201,8 @@ export default function AuthPage() {
                       {...registerFormRegister('password')}
                       id="register-password"
                       type="password"
+                      placeholder="******"
+                      autoComplete="new-password"
                     />
                     {registerErrors.password && (
                       <p className="text-sm text-red-500">
@@ -167,6 +216,8 @@ export default function AuthPage() {
                       {...registerFormRegister('confirmPassword')}
                       id="confirm-password"
                       type="password"
+                      placeholder="******"
+                      autoComplete="new-password"
                     />
                     {registerErrors.confirmPassword && (
                       <p className="text-sm text-red-500">

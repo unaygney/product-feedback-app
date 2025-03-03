@@ -1,8 +1,19 @@
+import { headers } from 'next/headers'
+import Link from 'next/link'
+
+import { auth } from '@/lib/auth'
 import { cn } from '@/lib/utils'
+
+import LogoutButton from '@/components/logout-button'
+import { Button } from '@/components/ui/button'
 
 import { RecentPost } from './components/post'
 
 export default async function Home() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  })
+
   return (
     <main className="relative isolate flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950">
       <div className="absolute inset-0 -z-10 bg-[url('/noise.svg')] opacity-50 mix-blend-soft-light [mask-image:radial-gradient(ellipse_at_center,black,transparent)]" />
@@ -24,6 +35,15 @@ export default async function Home() {
             end-to-end typesafe Next.js apps.
           </span>
         </p>
+        {session ? (
+          <LogoutButton />
+        ) : (
+          <Button asChild>
+            <Link prefetch href={'/auth'}>
+              Login
+            </Link>
+          </Button>
+        )}
 
         <RecentPost />
       </div>
