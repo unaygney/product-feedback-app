@@ -4,8 +4,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useQueryState } from 'nuqs'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
+import Turnstile from 'react-turnstile'
 
 import { authClient } from '@/lib/auth-client'
 import {
@@ -22,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function AuthPageContent() {
   const [tabs, setTabs] = useQueryState('')
+  const [token, setToken] = useState<string>('')
   const router = useRouter()
 
   // Login Form
@@ -48,6 +51,11 @@ export default function AuthPageContent() {
       {
         email: formData.email,
         password: formData.password,
+        fetchOptions: {
+          headers: {
+            'x-captcha-response': token,
+          },
+        },
       },
       {
         onSuccess: (ctx) => {
@@ -66,25 +74,31 @@ export default function AuthPageContent() {
   const onRegister = async (formData: RegisterInput) => {
     const loadingToastId = toast.loading('Creating account...')
 
-    await authClient.signUp.email(
-      {
+    try {
+      const { data, error } = await authClient.signUp.email({
         email: formData.email,
         password: formData.password,
         name: formData.name,
         callbackURL: '/',
-      },
-      {
-        onSuccess: () => {
-          toast.dismiss(loadingToastId)
-          toast.success('Account created. Redirecting...')
-          router.push('/')
+        fetchOptions: {
+          headers: {
+            'x-captcha-response': token,
+          },
         },
-        onError: (ctx) => {
-          toast.remove(loadingToastId)
-          toast.error(ctx.error.message)
-        },
+      })
+      if (!error) {
+        toast.dismiss(loadingToastId)
+        toast.success(`Account created for ${data.user.name}. Redirecting...`)
+        router.push('/')
       }
-    )
+    } catch (error: unknown) {
+      toast.remove(loadingToastId)
+      if (error instanceof Error) {
+        toast.error(error.message)
+      } else {
+        toast.error('An unknown error occurred')
+      }
+    }
   }
 
   return (
@@ -144,6 +158,10 @@ export default function AuthPageContent() {
                       </p>
                     )}
                   </div>
+                  <Turnstile
+                    sitekey={process.env.NEXT_PUBLIC_SITE_KEY}
+                    onVerify={(t) => setToken(t)}
+                  />
                   <Button
                     type="submit"
                     className="w-full bg-purple-600 hover:bg-purple-700"
@@ -224,6 +242,10 @@ export default function AuthPageContent() {
                       </p>
                     )}
                   </div>
+                  <Turnstile
+                    sitekey={process.env.NEXT_PUBLIC_SITE_KEY}
+                    onVerify={(t) => setToken(t)}
+                  />
                   <Button
                     type="submit"
                     className="w-full bg-purple-600 hover:bg-purple-700"
