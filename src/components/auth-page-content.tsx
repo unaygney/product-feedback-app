@@ -3,7 +3,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useQueryState } from 'nuqs'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
@@ -23,7 +22,6 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function AuthPageContent() {
-  const [tabs, setTabs] = useQueryState('')
   const [token, setToken] = useState<string>('')
   const router = useRouter()
 
@@ -114,11 +112,7 @@ export default function AuthPageContent() {
                 Sign in to your account or create a new one
               </p>
             </div>
-            <Tabs
-              defaultValue={tabs ?? 'login'}
-              className="space-y-4"
-              onValueChange={(value) => setTabs(value)}
-            >
+            <Tabs defaultValue={'login'} className="space-y-4">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login">Login</TabsTrigger>
                 <TabsTrigger value="register">Register</TabsTrigger>
@@ -159,7 +153,11 @@ export default function AuthPageContent() {
                     )}
                   </div>
                   <Turnstile
-                    sitekey={process.env.NEXT_PUBLIC_SITE_KEY}
+                    sitekey={
+                      process.env.NODE_ENV === 'development'
+                        ? '1x00000000000000000000AA'
+                        : process.env.NEXT_PUBLIC_SITE_KEY
+                    }
                     onVerify={(t) => setToken(t)}
                   />
                   <Button
@@ -243,7 +241,11 @@ export default function AuthPageContent() {
                     )}
                   </div>
                   <Turnstile
-                    sitekey={process.env.NEXT_PUBLIC_SITE_KEY}
+                    sitekey={
+                      process.env.NODE_ENV === 'development'
+                        ? '1x00000000000000000000AA'
+                        : process.env.NEXT_PUBLIC_SITE_KEY
+                    }
                     onVerify={(t) => setToken(t)}
                   />
                   <Button
