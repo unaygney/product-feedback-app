@@ -14,8 +14,8 @@ import { postRouter } from './routers/post-router'
 const api = j
   .router()
   .basePath('/api')
-  .use(j.defaults.cors)
   .on(['POST', 'GET'], '/auth/**', (c) => auth.handler(c.req.raw))
+  .use(j.defaults.cors)
   .onError(j.defaults.errorHandler)
 /**
  * This is the main router for your server.
