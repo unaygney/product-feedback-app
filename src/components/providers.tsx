@@ -6,7 +6,6 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query'
 import { HTTPException } from 'hono/http-exception'
-import { NuqsAdapter } from 'nuqs/adapters/next/app'
 import { PropsWithChildren, useState } from 'react'
 import { Toaster } from 'react-hot-toast'
 
@@ -26,7 +25,7 @@ export const Providers = ({ children }: PropsWithChildren) => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <NuqsAdapter>{children}</NuqsAdapter>
+      {children}
       <Toaster />
     </QueryClientProvider>
   )
