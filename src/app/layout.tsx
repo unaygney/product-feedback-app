@@ -5,8 +5,8 @@ import { Providers } from '@/components/providers'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'JStack App',
-  description: 'Created using JStack',
+  title: 'Product Feedback App',
+  description: 'Product feedback app built with Next.js ',
   icons: [{ rel: 'icon', url: '/favicon.ico' }],
 }
 
