@@ -15,7 +15,15 @@ export const auth = betterAuth({
     captcha({
       provider: 'cloudflare-turnstile',
       secretKey: process.env.TURNSTILE_SECRET_KEY!,
-      endpoints: ['/auth'],
     }),
   ],
 })
+
+export const isRequestedAuthPage = (pathname: string) => {
+  const authPages = ['/auth']
+  return authPages.some((page) => pathname.startsWith(page))
+}
+export const securedPages = (pathname: string) => {
+  const securedPaths = ['/dashboard', '/profile', '/settings']
+  return securedPaths.some((page) => pathname.startsWith(page))
+}
