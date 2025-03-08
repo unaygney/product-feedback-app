@@ -13,8 +13,6 @@ import { postRouter } from './routers/post-router'
  */
 const api = j
   .router()
-  .basePath('/api')
-  .on(['POST', 'GET'], '/auth/**', (c) => auth.handler(c.req.raw))
   .use(
     cors({
       origin: [
@@ -30,8 +28,9 @@ const api = j
       maxAge: 600,
     })
   )
+  .basePath('/api')
+  .on(['POST', 'GET'], '/auth/**', (c) => auth.handler(c.req.raw))
   .onError(j.defaults.errorHandler)
-
 /**
  * This is the main router for your server.
  * All routers in /server/routers should be added here manually.

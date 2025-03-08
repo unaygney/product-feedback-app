@@ -159,7 +159,11 @@ export default function AuthPageContent() {
                     )}
                   </div>
                   <Turnstile
-                    sitekey={process.env.NEXT_PUBLIC_SITE_KEY}
+                    sitekey={
+                      process.env.NODE_ENV === 'development'
+                        ? '1x00000000000000000000AA'
+                        : process.env.NEXT_PUBLIC_SITE_KEY
+                    }
                     onVerify={(t) => setToken(t)}
                   />
                   <Button
@@ -243,7 +247,11 @@ export default function AuthPageContent() {
                     )}
                   </div>
                   <Turnstile
-                    sitekey={process.env.NEXT_PUBLIC_SITE_KEY}
+                    sitekey={
+                      process.env.NODE_ENV === 'development'
+                        ? '1x00000000000000000000AA'
+                        : process.env.NEXT_PUBLIC_SITE_KEY
+                    }
                     onVerify={(t) => setToken(t)}
                   />
                   <Button
