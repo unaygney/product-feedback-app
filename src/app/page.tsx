@@ -35,6 +35,10 @@ export default async function Home() {
         )}
 
         <RecentPost />
+
+        <Link className="text-lg text-white" href="/secret">
+          Go to secret page
+        </Link>
       </div>
     </main>
   )

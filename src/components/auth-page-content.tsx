@@ -38,7 +38,7 @@ export default function AuthPageContent() {
   const {
     register: registerFormRegister,
     handleSubmit: handleRegisterSubmit,
-    formState: { errors: registerErrors },
+    formState: { errors: registerErrors, isSubmitting },
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
   })
@@ -163,7 +163,8 @@ export default function AuthPageContent() {
                   <Button
                     type="submit"
                     className="w-full bg-purple-600 hover:bg-purple-700"
-                    disabled={!token}
+                    disabled={!token || isSubmitting}
+                    isLoading={isSubmitting}
                   >
                     Sign in
                   </Button>
@@ -249,10 +250,12 @@ export default function AuthPageContent() {
                     }
                     onVerify={(t) => setToken(t)}
                   />
+
                   <Button
                     type="submit"
                     className="w-full bg-purple-600 hover:bg-purple-700"
-                    disabled={!token}
+                    disabled={!token || isSubmitting}
+                    isLoading={isSubmitting}
                   >
                     Create Account
                   </Button>
