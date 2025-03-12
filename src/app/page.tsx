@@ -2,7 +2,6 @@ import { headers } from 'next/headers'
 import Link from 'next/link'
 
 import { auth } from '@/lib/auth'
-import { cn } from '@/lib/utils'
 
 import LogoutButton from '@/components/logout-button'
 import { Button } from '@/components/ui/button'
