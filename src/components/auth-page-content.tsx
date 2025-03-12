@@ -59,7 +59,7 @@ export default function AuthPageContent() {
         onSuccess: (ctx) => {
           toast.dismiss(loadingToastId)
           toast.success(`Welcome back, ${ctx.data.user.name}. Redirecting...`)
-          // router.push('/')
+          router.push('/')
         },
         onError: (ctx) => {
           toast.remove(loadingToastId)
@@ -163,6 +163,7 @@ export default function AuthPageContent() {
                   <Button
                     type="submit"
                     className="w-full bg-purple-600 hover:bg-purple-700"
+                    disabled={!token}
                   >
                     Sign in
                   </Button>
@@ -251,6 +252,7 @@ export default function AuthPageContent() {
                   <Button
                     type="submit"
                     className="w-full bg-purple-600 hover:bg-purple-700"
+                    disabled={!token}
                   >
                     Create Account
                   </Button>
