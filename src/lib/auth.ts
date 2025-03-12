@@ -10,6 +10,7 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    autoSignIn: true,
   },
   plugins: [
     captcha({
@@ -20,13 +21,7 @@ export const auth = betterAuth({
           : '1x0000000000000000000000000000000AA',
     }),
   ],
+  advanced: {
+    useSecureCookies: process.env.NODE_ENV === 'production',
+  },
 })
-
-export const isRequestedAuthPage = (pathname: string) => {
-  const authPages = ['/auth']
-  return authPages.some((page) => pathname.startsWith(page))
-}
-export const securedPages = (pathname: string) => {
-  const securedPaths = ['/dashboard', '/profile', '/settings', '/secret']
-  return securedPaths.some((page) => pathname.startsWith(page))
-}
