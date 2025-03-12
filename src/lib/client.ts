@@ -11,14 +11,13 @@ export const client = createClient<AppRouter>({
 })
 
 /**
- * Get the base URL for the API
+ * Get the base URL
  */
 
 export function getBaseUrl() {
-  // 👇 Adjust for wherever you deploy
   if (process.env.NODE_ENV === 'production') {
-    return `${process.env.NEXT_PUBLIC_BACKEND_URL}`
+    return `${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}`
   } else {
-    return 'http://localhost:8080'
+    return 'http://localhost:3000'
   }
 }
