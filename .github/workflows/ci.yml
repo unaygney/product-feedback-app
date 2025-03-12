@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install Dependencies
         run: npm install
@@ -15,9 +15,17 @@ jobs:
       - name: Create .env file from GitHub Secrets
         run: |
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > .env
+          echo "BETTER_AUTH_SECRET=${{ secrets.BETTER_AUTH_SECRET }}" >> .env
+          echo "TURNSTILE_SECRET_KEY=${{ secrets.TURNSTILE_SECRET_KEY }}" >> .env
+          echo "NEXT_PUBLIC_BACKEND_URL=${{ secrets.NEXT_PUBLIC_BACKEND_URL }}" >> .env
+          echo "NEXT_PUBLIC_SITE_KEY=${{ secrets.NEXT_PUBLIC_SITE_KEY }}" >> .env
+          echo "NEXT_PUBLIC_BETTER_AUTH_URL=${{ secrets.NEXT_PUBLIC_BETTER_AUTH_URL }}" >> .env
 
       - name: Lint
         run: npm run lint
 
       - name: Build
         run: npm run build
+
+      - name: Test
+        run: npm run test
