@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { auth } from '@/lib/auth'
 
 import LogoutButton from '@/components/logout-button'
-import { RecentPost } from '@/components/post'
 import { Button } from '@/components/ui/button'
 
 export default async function Home() {
