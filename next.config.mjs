@@ -8,6 +8,8 @@ const nextConfig = {
   },
   experimental: {
     nodeMiddleware: true,
+    typedRoutes: true,
+    authInterrupts: true,
   },
 }
 
