@@ -4,9 +4,8 @@ import Link from 'next/link'
 import { auth } from '@/lib/auth'
 
 import LogoutButton from '@/components/logout-button'
+import { RecentPost } from '@/components/post'
 import { Button } from '@/components/ui/button'
-
-import { RecentPost } from './components/post'
 
 export default async function Home() {
   const session = await auth.api.getSession({
