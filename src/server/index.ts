@@ -3,7 +3,7 @@ import { cors } from 'hono/cors'
 import { auth } from '@/lib/auth'
 
 import { j } from './jstack'
-import { postRouter } from './routers/post-router'
+import { suggeestionRouter } from './routers/suggestion-router'
 import { userRouter } from './routers/user-router'
 
 /**
@@ -37,8 +37,8 @@ const api = j
  * All routers in /server/routers should be added here manually.
  */
 const appRouter = j.mergeRouters(api, {
-  post: postRouter,
   user: userRouter,
+  suggestion: suggeestionRouter,
 })
 
 export type AppRouter = typeof appRouter

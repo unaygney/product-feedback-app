@@ -1,4 +1,11 @@
-import { boolean, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
+import {
+  boolean,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core'
 
 export const categoryEnum = pgEnum('category', [
   'feature',
@@ -61,66 +68,65 @@ export const verification = pgTable('verification', {
 })
 
 export const product = pgTable('product', {
-  id: text('id').primaryKey(),
+  id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
   description: text('description'),
   logo: text('logo'),
   websiteUrl: text('website_url'),
   ownerId: text('owner_id')
     .notNull()
-    .references(() => user.id, { onDelete: 'cascade' }),
-  createdAt: timestamp('created_at').notNull(),
-  updatedAt: timestamp('updated_at').notNull(),
+    .references(() => user.id),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
 
 export const suggestion = pgTable('suggestion', {
-  id: text('id').primaryKey(),
+  id: uuid('id').primaryKey().defaultRandom(),
   title: text('title').notNull(),
   description: text('description').notNull(),
   category: categoryEnum('category').notNull(),
   status: statusEnum('status').notNull().default('planned'),
-  productId: text('product_id')
+  productId: uuid('product_id')
     .notNull()
-    .references(() => product.id, { onDelete: 'cascade' }),
+    .references(() => product.id),
   userId: text('user_id')
     .notNull()
-    .references(() => user.id, { onDelete: 'cascade' }),
-  createdAt: timestamp('created_at').notNull(),
-  updatedAt: timestamp('updated_at').notNull(),
+    .references(() => user.id),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
 
 export const comment = pgTable('comment', {
-  id: text('id').primaryKey(),
+  id: uuid('id').primaryKey().defaultRandom(),
   content: text('content').notNull(),
-  suggestionId: text('suggestion_id')
+  suggestionId: uuid('suggestion_id')
     .notNull()
-    .references(() => suggestion.id, { onDelete: 'cascade' }),
+    .references(() => suggestion.id),
   userId: text('user_id')
     .notNull()
-    .references(() => user.id, { onDelete: 'cascade' }),
-
-  createdAt: timestamp('created_at').notNull(),
-  updatedAt: timestamp('updated_at').notNull(),
+    .references(() => user.id),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
 
 export const vote = pgTable('vote', {
-  id: text('id').primaryKey(),
-  suggestionId: text('suggestion_id')
+  id: uuid('id').primaryKey().defaultRandom(),
+  suggestionId: uuid('suggestion_id')
     .notNull()
-    .references(() => suggestion.id, { onDelete: 'cascade' }),
+    .references(() => suggestion.id),
   userId: text('user_id')
     .notNull()
-    .references(() => user.id, { onDelete: 'cascade' }),
-  createdAt: timestamp('created_at').notNull(),
+    .references(() => user.id),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
 })
 
 export const mentionedUser = pgTable('mentioned_user', {
-  id: text('id').primaryKey(),
-  commentId: text('comment_id')
+  id: uuid('id').primaryKey().defaultRandom(),
+  commentId: uuid('comment_id')
     .notNull()
-    .references(() => comment.id, { onDelete: 'cascade' }),
+    .references(() => comment.id),
   userId: text('user_id')
     .notNull()
-    .references(() => user.id, { onDelete: 'cascade' }),
-  createdAt: timestamp('created_at').notNull(),
+    .references(() => user.id),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
 })
