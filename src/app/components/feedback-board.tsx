@@ -1,3 +1,5 @@
+'use client'
+
 import { ChevronUp, MessageSquare } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -114,10 +116,10 @@ export default function FeedbackBoard() {
 
             {/* Feedback Items */}
             <div className="space-y-4">
-              <Card className="flex gap-6 p-6">
+              <Card className="flex flex-row gap-6 p-6">
                 <Button
                   variant="secondary"
-                  className="h-auto flex-col gap-2 bg-gray-100 px-3 py-2"
+                  className="h-[53px] cursor-pointer flex-col gap-2 bg-gray-100 px-3 py-2"
                 >
                   <ChevronUp className="h-4 w-4" />
                   <span className="font-bold">112</span>
@@ -137,142 +139,6 @@ export default function FeedbackBoard() {
                 <div className="flex items-center gap-2 text-gray-600">
                   <MessageSquare className="h-4 w-4" />
                   <span>2</span>
-                </div>
-              </Card>
-
-              <Card className="flex gap-6 p-6">
-                <Button
-                  variant="secondary"
-                  className="h-auto flex-col gap-2 bg-gray-100 px-3 py-2"
-                >
-                  <ChevronUp className="h-4 w-4" />
-                  <span className="font-bold">99</span>
-                </Button>
-                <div className="flex-1">
-                  <h3 className="font-semibold">Add a dark theme option</h3>
-                  <p className="mt-1 text-gray-600">
-                    It would help people with light sensitivities and who prefer
-                    dark mode.
-                  </p>
-                  <Badge
-                    variant="secondary"
-                    className="mt-4 bg-blue-50 text-blue-700 hover:bg-blue-50"
-                  >
-                    Feature
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MessageSquare className="h-4 w-4" />
-                  <span>4</span>
-                </div>
-              </Card>
-
-              <Card className="flex gap-6 p-6">
-                <Button
-                  variant="secondary"
-                  className="h-auto flex-col gap-2 bg-gray-100 px-3 py-2"
-                >
-                  <ChevronUp className="h-4 w-4" />
-                  <span className="font-bold">65</span>
-                </Button>
-                <div className="flex-1">
-                  <h3 className="font-semibold">
-                    Q&A within the challenge hubs
-                  </h3>
-                  <p className="mt-1 text-gray-600">
-                    Challenge-specific Q&A would make for easy reference.
-                  </p>
-                  <Badge
-                    variant="secondary"
-                    className="mt-4 bg-blue-50 text-blue-700 hover:bg-blue-50"
-                  >
-                    Feature
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MessageSquare className="h-4 w-4" />
-                  <span>1</span>
-                </div>
-              </Card>
-
-              <Card className="flex gap-6 p-6">
-                <Button
-                  variant="secondary"
-                  className="h-auto flex-col gap-2 bg-gray-100 px-3 py-2"
-                >
-                  <ChevronUp className="h-4 w-4" />
-                  <span className="font-bold">51</span>
-                </Button>
-                <div className="flex-1">
-                  <h3 className="font-semibold">
-                    Allow image/video upload to feedback
-                  </h3>
-                  <p className="mt-1 text-gray-600">
-                    Images and screenshots can enhance comments on solutions.
-                  </p>
-                  <Badge
-                    variant="secondary"
-                    className="mt-4 bg-blue-50 text-blue-700 hover:bg-blue-50"
-                  >
-                    Enhancement
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MessageSquare className="h-4 w-4" />
-                  <span>2</span>
-                </div>
-              </Card>
-
-              <Card className="flex gap-6 p-6">
-                <Button
-                  variant="secondary"
-                  className="h-auto flex-col gap-2 bg-gray-100 px-3 py-2"
-                >
-                  <ChevronUp className="h-4 w-4" />
-                  <span className="font-bold">42</span>
-                </Button>
-                <div className="flex-1">
-                  <h3 className="font-semibold">Ability to follow others</h3>
-                  <p className="mt-1 text-gray-600">
-                    Stay updated on comments and solutions other people post.
-                  </p>
-                  <Badge
-                    variant="secondary"
-                    className="mt-4 bg-blue-50 text-blue-700 hover:bg-blue-50"
-                  >
-                    Feature
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MessageSquare className="h-4 w-4" />
-                  <span>3</span>
-                </div>
-              </Card>
-
-              <Card className="flex gap-6 p-6">
-                <Button
-                  variant="secondary"
-                  className="h-auto flex-col gap-2 bg-gray-100 px-3 py-2"
-                >
-                  <ChevronUp className="h-4 w-4" />
-                  <span className="font-bold">3</span>
-                </Button>
-                <div className="flex-1">
-                  <h3 className="font-semibold">Preview images not loading</h3>
-                  <p className="mt-1 text-gray-600">
-                    Challenge preview images are missing when you apply a
-                    filter.
-                  </p>
-                  <Badge
-                    variant="secondary"
-                    className="mt-4 bg-blue-50 text-blue-700 hover:bg-blue-50"
-                  >
-                    Bug
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MessageSquare className="h-4 w-4" />
-                  <span>0</span>
                 </div>
               </Card>
             </div>
