@@ -22,5 +22,12 @@ export const registerSchema = z
     path: ['confirmPassword'],
   })
 
+export const createSuggestionSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  category: z.enum(['feature', 'ui', 'ux', 'enhancement', 'bug']),
+  description: z.string().min(1, 'Description is required'),
+})
+
+export type CreateSuggestionInput = z.infer<typeof createSuggestionSchema>
 export type LoginInput = z.infer<typeof loginSchema>
 export type RegisterInput = z.infer<typeof registerSchema>

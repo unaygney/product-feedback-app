@@ -1,10 +1,13 @@
 'use client'
 
+import { useMutation } from '@tanstack/react-query'
 import { ChevronLeft, Plus } from 'lucide-react'
 import Link from 'next/link'
 import type React from 'react'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
+import { Controller, useForm } from 'react-hook-form'
+
+import { client } from '@/lib/client'
+import { CreateSuggestionInput } from '@/lib/form-schemas'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,12 +24,28 @@ export default function CreateFeedback() {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors },
-  } = useForm()
+  } = useForm<CreateSuggestionInput>()
 
-  const onSubmit = async (data: any) => {
-    console.log(data)
+  // ✅ useMutation component'in en üstünde tanımlanmalı
+  const { mutate: createPost, isPending } = useMutation({
+    mutationFn: async (data: CreateSuggestionInput) => {
+      const res = await client.suggestion.create.$post(data)
+      return res
+    },
+    onSuccess: (data) => {
+      console.log('Başarılı:', data)
+      // Örneğin yönlendirme veya toast bildirimi koyabilirsin
+    },
+    onError: (error) => {
+      console.error('Hata:', error)
+    },
+  })
+
+  // ✅ Sadece mutate çağrılıyor
+  const onSubmit = (data: CreateSuggestionInput) => {
+    createPost(data)
   }
 
   return (
@@ -60,7 +79,13 @@ export default function CreateFeedback() {
                 <p className="text-sm text-slate-500">
                   Add a short, descriptive headline
                 </p>
-                <Input className="w-full" />
+                <Input
+                  {...register('title', { required: true })}
+                  className="w-full"
+                />
+                {errors.title && (
+                  <p className="text-sm text-red-500">Title is required</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -70,17 +95,30 @@ export default function CreateFeedback() {
                 <p className="text-sm text-slate-500">
                   Choose a category for your feedback
                 </p>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="feature">Feature</SelectItem>
-                    <SelectItem value="bug">Bug</SelectItem>
-                    <SelectItem value="enhancement">Enhancement</SelectItem>
-                    <SelectItem value="ux">UX</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Controller
+                  name="category"
+                  control={control}
+                  rules={{ required: true }}
+                  render={({ field }) => (
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="feature">Feature</SelectItem>
+                        <SelectItem value="bug">Bug</SelectItem>
+                        <SelectItem value="enhancement">Enhancement</SelectItem>
+                        <SelectItem value="ux">UX</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.category && (
+                  <p className="text-sm text-red-500">Category is required</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -91,7 +129,13 @@ export default function CreateFeedback() {
                   Include any specific comments on what should be improved,
                   added, etc.
                 </p>
-                <Textarea className="min-h-[120px]" />
+                <Textarea
+                  {...register('description', { required: true })}
+                  className="min-h-[120px]"
+                />
+                {errors.description && (
+                  <p className="text-sm text-red-500">Detail is required</p>
+                )}
               </div>
 
               <div className="flex flex-col-reverse gap-4 sm:flex-row sm:justify-end">
@@ -104,9 +148,10 @@ export default function CreateFeedback() {
                 </Button>
                 <Button
                   type="submit"
+                  disabled={isPending} // Yükleniyorsa disable
                   className="w-full bg-purple-500 hover:bg-purple-600 sm:w-auto"
                 >
-                  Add Feedback
+                  {isPending ? 'Adding...' : 'Add Feedback'}
                 </Button>
               </div>
             </form>
