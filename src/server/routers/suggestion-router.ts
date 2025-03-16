@@ -1,6 +1,5 @@
-import { j, privateProcedure, publicProcedure } from '../jstack'
-import { desc, eq } from 'drizzle-orm'
-import { z } from 'zod'
+import { j, privateProcedure } from '../jstack'
+import { HTTPException } from 'hono/http-exception'
 
 import { createSuggestionSchema } from '@/lib/form-schemas'
 
@@ -13,24 +12,31 @@ export const suggeestionRouter = j.router({
       const { category, description, title } = input
       const { db, user } = ctx
 
-      const post = await db.insert(suggestion).values({
-        category,
-        description,
-        title,
-        userId: user.id,
-        productId: '1',
+      const product = await db.query.product.findFirst({
+        where: (p, { eq }) => eq(p.ownerId, user.id),
       })
 
-      return c.superjson(post)
+      if (!product) {
+        throw new HTTPException(404, {
+          message: 'Product not found',
+        })
+      }
+
+      try {
+        await db.insert(suggestion).values({
+          category,
+          description,
+          title,
+          userId: user.id,
+          productId: product.id,
+        })
+      } catch (e: unknown) {
+        console.error(e)
+        throw new HTTPException(500, {
+          message: 'Error creating suggestion',
+        })
+      }
+
+      return c.superjson('Suggestion created!', 201)
     }),
-  // get: publicProcedure
-  //   .input(z.object({ id: uuid() }))
-  //   .query(async ({ ctx, c, input }) => {
-  //     const { id } = input
-  //     const { db } = ctx
-
-  //     const post = await db.select().from(suggestion).where(eq(suggestion.id, id))
-
-  //     return c.superjson(post)
-  //   }
 })
