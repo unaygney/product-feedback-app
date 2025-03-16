@@ -4,7 +4,7 @@ import React from 'react'
 
 import { auth } from '@/lib/auth'
 
-import FeedbackBoard from '@/app/components/feedback-board'
+import FeedbackBoard from '@/components/feedback-board'
 
 export default async function DashboardPage() {
   const session = await auth.api.getSession({
