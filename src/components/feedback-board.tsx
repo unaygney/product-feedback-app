@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
+import EmptyFeedback from './empty-suggestions'
 import {
   SelectComment,
   SelectProduct,
@@ -167,7 +168,7 @@ export default function FeedbackBoard({
 
             {/* Feedback Items */}
             <div className="flex flex-col gap-4">
-              {product.suggestions.length > 0 ? (
+              {product.suggestions.length < 0 ? (
                 product.suggestions.map((suggestion) => (
                   <Link
                     prefetch={true}
@@ -204,23 +205,7 @@ export default function FeedbackBoard({
                   </Link>
                 ))
               ) : (
-                <Card className="p-12 text-center">
-                  <h3 className="mb-2 text-xl font-semibold">
-                    No feedback yet
-                  </h3>
-                  <p className="mb-6 text-gray-600">
-                    Got a suggestion? Found a bug that needs to be squashed? We
-                    love hearing about new ideas to improve our app.
-                  </p>
-                  <Button
-                    onClick={() =>
-                      router.push(`/${product.name}/create-feedback`)
-                    }
-                    className="bg-purple-600 hover:bg-purple-700"
-                  >
-                    + Add Feedback
-                  </Button>
-                </Card>
+                <EmptyFeedback />
               )}
             </div>
           </div>
