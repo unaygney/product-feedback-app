@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { auth } from '@/lib/auth'
 
 import LogoutButton from '@/components/logout-button'
-import { Button } from '@/components/ui/button'
 
 export default async function Home() {
   const session = await auth.api.getSession({
@@ -25,11 +24,9 @@ export default async function Home() {
         {session ? (
           <LogoutButton />
         ) : (
-          <Button asChild>
-            <Link prefetch href={'/auth'}>
-              Login
-            </Link>
-          </Button>
+          <Link prefetch href={'/auth'}>
+            Login
+          </Link>
         )}
 
         <Link className="text-lg text-white" href="/secret">

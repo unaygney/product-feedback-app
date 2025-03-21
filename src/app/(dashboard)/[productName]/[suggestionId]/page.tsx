@@ -1,14 +1,16 @@
 'use client'
 
 import { ArrowLeft, ChevronUp } from 'lucide-react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { use, useState } from 'react'
+
+import { cn } from '@/lib/utils'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-
-//TODO: Implement SuggestionDetailPage
 
 export default function SuggestionDetailPage({
   params,
@@ -18,6 +20,8 @@ export default function SuggestionDetailPage({
   const [commentText, setCommentText] = useState('')
   const maxCharacters = 250
 
+  const pathname = usePathname()
+
   const { productName, suggestionId } = use(params)
   console.log(productName, suggestionId)
 
@@ -25,14 +29,16 @@ export default function SuggestionDetailPage({
     <div className="mx-auto max-w-3xl px-4 py-6 md:py-8">
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="flex items-center gap-1 text-blue-600"
+        <Link
+          href={{ pathname: `/${pathname.split('/')[1]}` }}
+          className={cn(
+            buttonVariants({ variant: 'link' }),
+            'flex items-center gap-1 text-blue-600'
+          )}
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Go Back</span>
-        </Button>
+        </Link>
         <Button className="bg-blue-600 hover:bg-blue-700">Edit Feedback</Button>
       </div>
 

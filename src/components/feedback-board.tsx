@@ -1,9 +1,13 @@
 'use client'
 
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ChevronUp, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
+import toast from 'react-hot-toast'
 
+import { client } from '@/lib/client'
 import { cn } from '@/lib/utils'
 
 import { Badge } from '@/components/ui/badge'
@@ -25,6 +29,116 @@ import {
   SelectVote,
 } from '@/server/db/db'
 
+const useVoteStatus = (suggestionId: string) => {
+  return useQuery({
+    queryKey: ['isVoted', suggestionId],
+    queryFn: async () => {
+      const res = await client.upvote.check.$get({
+        suggestionId: suggestionId,
+      })
+      const r = await res.json()
+      return r.isVoted
+    },
+  })
+}
+
+const useUpvoteMutation = (suggestionId: string) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async () => {
+      await client.upvote.upvote.$post({
+        suggestionId: suggestionId,
+      })
+    },
+    onSuccess: async () => {
+      toast.success('Upvoted!')
+      await queryClient.invalidateQueries({
+        queryKey: ['isVoted', suggestionId],
+      })
+    },
+    onError: (err) => {
+      toast.error(err.message)
+    },
+  })
+}
+
+const useDownvoteMutation = (suggestionId: string) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async () => {
+      await client.upvote.downvote.$post({
+        suggestionId: suggestionId,
+      })
+    },
+    onSuccess: async () => {
+      toast.success('Downvoted!')
+      await queryClient.invalidateQueries({
+        queryKey: ['isVoted', suggestionId],
+      })
+    },
+    onError: (err) => {
+      toast.error(err.message)
+    },
+  })
+}
+
+function SuggestionItem({
+  suggestion,
+  productName,
+}: {
+  suggestion: SelectSuggestion & {
+    comments: SelectComment[]
+    votes: SelectVote[]
+  }
+  productName: string
+}) {
+  // Hooks are now at the top level of this component
+  const { data: isVoted } = useVoteStatus(suggestion.id)
+  const { mutate: upvote } = useUpvoteMutation(suggestion.id)
+  const { mutate: downvote } = useDownvoteMutation(suggestion.id)
+
+  const handleVoteClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    if (isVoted) {
+      downvote()
+    } else {
+      upvote()
+    }
+  }
+
+  return (
+    <Link prefetch={true} href={`/${productName}/${suggestion.id}`}>
+      <Card className="flex flex-row gap-6 p-6">
+        <Button
+          variant="secondary"
+          className={cn(
+            'h-[53px] cursor-pointer flex-col gap-2 bg-gray-100 px-3 py-2 transition-colors hover:bg-gray-200',
+            { 'bg-gray-300': isVoted }
+          )}
+          onClick={handleVoteClick}
+        >
+          <ChevronUp className="h-4 w-4" />
+          <span className="font-bold">{suggestion?.votes.length || 0}</span>
+        </Button>
+        <div className="flex-1">
+          <h3 className="font-semibold">{suggestion.title}</h3>
+          <p className="mt-1 text-gray-600">{suggestion.description}</p>
+          <Badge
+            variant="secondary"
+            className="mt-4 bg-blue-50 text-blue-700 capitalize hover:bg-blue-50"
+          >
+            {suggestion.category}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-2 text-gray-600">
+          <MessageSquare className="h-4 w-4" />
+          <span>{suggestion.comments.length}</span>
+        </div>
+      </Card>
+    </Link>
+  )
+}
+
 export default function FeedbackBoard({
   product,
 }: {
@@ -36,12 +150,12 @@ export default function FeedbackBoard({
   }
 }) {
   const router = useRouter()
+  const pathname = usePathname()
 
   const suggestionCategory = new Set(
     product.suggestions.map((suggestion) => suggestion.category)
   )
 
-  console.log('product', product)
   return (
     <div className="min-h-screen bg-slate-50 p-4">
       <div className="mx-auto max-w-6xl">
@@ -161,48 +275,26 @@ export default function FeedbackBoard({
                   </Select>
                 </div>
               </div>
-              <Button className="bg-purple-600 hover:bg-purple-700">
+              <Link
+                href={{ pathname: `${pathname}/create-feedback` }}
+                className={cn(
+                  buttonVariants({ variant: 'link' }),
+                  'bg-purple-600 text-white hover:bg-purple-700'
+                )}
+              >
                 + Add Feedback
-              </Button>
+              </Link>
             </div>
 
             {/* Feedback Items */}
             <div className="flex flex-col gap-4">
-              {product.suggestions.length < 0 ? (
+              {product.suggestions.length > 0 ? (
                 product.suggestions.map((suggestion) => (
-                  <Link
-                    prefetch={true}
-                    href={`/${product.name}/${suggestion.id}`}
+                  <SuggestionItem
                     key={suggestion.id}
-                  >
-                    <Card className="flex flex-row gap-6 p-6">
-                      <Button
-                        variant="secondary"
-                        className="h-[53px] cursor-pointer flex-col gap-2 bg-gray-100 px-3 py-2"
-                      >
-                        <ChevronUp className="h-4 w-4" />
-                        <span className="font-bold">
-                          {suggestion?.votes.length || 0}
-                        </span>
-                      </Button>
-                      <div className="flex-1">
-                        <h3 className="font-semibold">{suggestion.title}</h3>
-                        <p className="mt-1 text-gray-600">
-                          {suggestion.description}
-                        </p>
-                        <Badge
-                          variant="secondary"
-                          className="mt-4 bg-blue-50 text-blue-700 capitalize hover:bg-blue-50"
-                        >
-                          {suggestion.category}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <MessageSquare className="h-4 w-4" />
-                        <span>{suggestion.comments.length}</span>
-                      </div>
-                    </Card>
-                  </Link>
+                    suggestion={suggestion}
+                    productName={product.name}
+                  />
                 ))
               ) : (
                 <EmptyFeedback />
