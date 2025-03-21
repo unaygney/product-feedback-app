@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth'
 
 import { j } from './jstack'
 import { suggeestionRouter } from './routers/suggestion-router'
+import { upvoteRouter } from './routers/upvote-router'
 import { userRouter } from './routers/user-router'
 
 /**
@@ -39,6 +40,7 @@ const api = j
 const appRouter = j.mergeRouters(api, {
   user: userRouter,
   suggestion: suggeestionRouter,
+  upvote: upvoteRouter,
 })
 
 export type AppRouter = typeof appRouter
