@@ -1,5 +1,3 @@
-1. Add Jost Font
-2. Change button styles
 3. Add Vote funcionality in /:productname
 4. Add Empty Suggestion Page
 5. Change suggestions page to client page so you fetch data client side
