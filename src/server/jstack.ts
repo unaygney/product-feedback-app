@@ -6,6 +6,9 @@ import { jstack } from 'jstack'
 
 import { auth } from '@/lib/auth'
 
+import * as relationsImport from '@/server/db/relations'
+import * as schemaImport from '@/server/db/schema'
+
 interface Env {
   Bindings: { DATABASE_URL: string }
 }
@@ -18,10 +21,11 @@ export const j = jstack.init<Env>()
  * @see https://jstack.app/docs/backend/middleware
  */
 const databaseMiddleware = j.middleware(async ({ c, next }) => {
+  const schema = { ...schemaImport, ...relationsImport }
   const { DATABASE_URL } = env(c)
 
   const sql = neon(DATABASE_URL)
-  const db = drizzle(sql)
+  const db = drizzle(sql, { schema })
 
   return await next({ db })
 })
