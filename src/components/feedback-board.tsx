@@ -1,13 +1,10 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ChevronUp, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { notFound, useRouter } from 'next/navigation'
 import { usePathname } from 'next/navigation'
-import toast from 'react-hot-toast'
 
-import { client } from '@/lib/client'
 import { cn } from '@/lib/utils'
 
 import { Badge } from '@/components/ui/badge'
@@ -23,64 +20,12 @@ import {
 
 import EmptyFeedback from './empty-suggestions'
 import {
-  SelectComment,
-  SelectProduct,
-  SelectSuggestion,
-  SelectVote,
-} from '@/server/db/db'
-
-const useVoteStatus = (suggestionId: string) => {
-  return useQuery({
-    queryKey: ['isVoted', suggestionId],
-    queryFn: async () => {
-      const res = await client.upvote.check.$get({
-        suggestionId: suggestionId,
-      })
-      const r = await res.json()
-      return r.isVoted
-    },
-  })
-}
-
-const useUpvoteMutation = (suggestionId: string) => {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: async () => {
-      await client.upvote.upvote.$post({
-        suggestionId: suggestionId,
-      })
-    },
-    onSuccess: async () => {
-      toast.success('Upvoted!')
-      await queryClient.invalidateQueries({
-        queryKey: ['isVoted', suggestionId],
-      })
-    },
-    onError: (err) => {
-      toast.error(err.message)
-    },
-  })
-}
-
-const useDownvoteMutation = (suggestionId: string) => {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: async () => {
-      await client.upvote.downvote.$post({
-        suggestionId: suggestionId,
-      })
-    },
-    onSuccess: async () => {
-      toast.success('Downvoted!')
-      await queryClient.invalidateQueries({
-        queryKey: ['isVoted', suggestionId],
-      })
-    },
-    onError: (err) => {
-      toast.error(err.message)
-    },
-  })
-}
+  useDownvoteMutation,
+  useProduct,
+  useUpvoteMutation,
+  useVoteStatus,
+} from '@/hooks'
+import { SelectComment, SelectSuggestion, SelectVote } from '@/server/db/db'
 
 function SuggestionItem({
   suggestion,
@@ -92,19 +37,9 @@ function SuggestionItem({
   }
   productName: string
 }) {
-  // Hooks are now at the top level of this component
   const { data: isVoted } = useVoteStatus(suggestion.id)
   const { mutate: upvote } = useUpvoteMutation(suggestion.id)
   const { mutate: downvote } = useDownvoteMutation(suggestion.id)
-
-  const handleVoteClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault()
-    if (isVoted) {
-      downvote()
-    } else {
-      upvote()
-    }
-  }
 
   return (
     <Link prefetch={true} href={`/${productName}/${suggestion.id}`}>
@@ -115,7 +50,14 @@ function SuggestionItem({
             'h-[53px] cursor-pointer flex-col gap-2 bg-gray-100 px-3 py-2 transition-colors hover:bg-gray-200',
             { 'bg-gray-300': isVoted }
           )}
-          onClick={handleVoteClick}
+          onClick={(e) => {
+            e.preventDefault()
+            if (isVoted) {
+              downvote()
+            } else {
+              upvote()
+            }
+          }}
         >
           <ChevronUp className="h-4 w-4" />
           <span className="font-bold">{suggestion?.votes.length || 0}</span>
@@ -139,18 +81,13 @@ function SuggestionItem({
   )
 }
 
-export default function FeedbackBoard({
-  product,
-}: {
-  product: SelectProduct & {
-    suggestions: (SelectSuggestion & {
-      comments: SelectComment[]
-      votes: SelectVote[]
-    })[]
-  }
-}) {
+export default function FeedbackBoard({ slug }: { slug: string }) {
   const router = useRouter()
   const pathname = usePathname()
+
+  const { product } = useProduct(slug)
+
+  if (!product) return notFound()
 
   const suggestionCategory = new Set(
     product.suggestions.map((suggestion) => suggestion.category)
