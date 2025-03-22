@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm'
 import {
   boolean,
   pgEnum,
@@ -69,7 +70,8 @@ export const verification = pgTable('verification', {
 
 export const product = pgTable('product', {
   id: uuid('id').primaryKey().defaultRandom(),
-  name: text('name').notNull(),
+  name: text('name').notNull().unique(),
+  slug: text('slug').notNull().unique(),
   description: text('description'),
   logo: text('logo'),
   websiteUrl: text('website_url'),
