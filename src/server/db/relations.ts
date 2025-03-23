@@ -59,7 +59,13 @@ export const commentRelations = relations(comment, ({ one, many }) => ({
     references: [user.id],
   }),
   mentionedUsers: many(mentionedUser),
+  parentComment: one(comment, {
+    fields: [comment.parentCommentId],
+    references: [comment.id],
+  }),
+  replies: many(comment),
 }))
+
 export const mentionedUserRelations = relations(mentionedUser, ({ one }) => ({
   comment: one(comment, {
     fields: [mentionedUser.commentId],
