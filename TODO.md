@@ -1,4 +1,4 @@
-1. genereta dynamic metadata with user data.
+1. genereta dynamic metadata with user data. ( postponed )
 2. Add real data in feedback detail page and show real comment and add comment
 3. check out add feedback and edit feedback page.
 4. add real data in roadmap page. and use useoptimistic ui
