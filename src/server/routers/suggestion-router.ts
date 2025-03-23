@@ -1,5 +1,6 @@
-import { j, privateProcedure } from '../jstack'
+import { j, privateProcedure, publicProcedure } from '../jstack'
 import { HTTPException } from 'hono/http-exception'
+import { z } from 'zod'
 
 import { createSuggestionSchema } from '@/lib/form-schemas'
 
@@ -38,5 +39,35 @@ export const suggeestionRouter = j.router({
       }
 
       return c.superjson('Suggestion created!', 201)
+    }),
+  get: publicProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+      })
+    )
+    .query(async ({ ctx, c, input }) => {
+      const { id } = input
+      const { db } = ctx
+
+      const suggestion = await db.query.suggestion.findFirst({
+        where: (s, { eq }) => eq(s.id, id),
+        with: {
+          votes: true,
+          comments: {
+            with: {
+              author: true,
+            },
+          },
+        },
+      })
+
+      if (!suggestion) {
+        throw new HTTPException(404, {
+          message: 'Suggestion not found',
+        })
+      }
+
+      return c.superjson(suggestion)
     }),
 })
