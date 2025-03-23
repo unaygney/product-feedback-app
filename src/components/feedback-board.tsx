@@ -29,20 +29,20 @@ import { SelectComment, SelectSuggestion, SelectVote } from '@/server/db/db'
 
 function SuggestionItem({
   suggestion,
-  productName,
+  slug,
 }: {
   suggestion: SelectSuggestion & {
     comments: SelectComment[]
     votes: SelectVote[]
   }
-  productName: string
+  slug: string
 }) {
   const { data: isVoted } = useVoteStatus(suggestion.id)
   const { mutate: upvote } = useUpvoteMutation(suggestion.id)
   const { mutate: downvote } = useDownvoteMutation(suggestion.id)
 
   return (
-    <Link prefetch={true} href={`/${productName}/${suggestion.id}`}>
+    <Link prefetch={true} href={`/${slug}/${suggestion.id}`}>
       <Card className="flex flex-row gap-6 p-6">
         <Button
           variant="secondary"
@@ -114,7 +114,7 @@ export default function FeedbackBoard({ slug }: { slug: string }) {
                     variant="secondary"
                     className="cursor-pointer bg-blue-50 text-blue-700 capitalize hover:bg-blue-50"
                     onClick={() =>
-                      router.push(`/${product.name}?category=${c}`)
+                      router.push(`/${product.slug}?category=${c}`)
                     }
                   >
                     {c}
@@ -135,7 +135,7 @@ export default function FeedbackBoard({ slug }: { slug: string }) {
                     })
                   )}
                   prefetch={true}
-                  href={`/${product.name}/roadmap`}
+                  href={`/${product.slug}/roadmap`}
                 >
                   View
                 </Link>
@@ -230,7 +230,7 @@ export default function FeedbackBoard({ slug }: { slug: string }) {
                   <SuggestionItem
                     key={suggestion.id}
                     suggestion={suggestion}
-                    productName={product.name}
+                    slug={product.slug}
                   />
                 ))
               ) : (
