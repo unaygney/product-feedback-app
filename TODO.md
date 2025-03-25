@@ -1,7 +1,7 @@
-1. genereta dynamic metadata with user data. ( postponed )
-2. Add real data in feedback detail page and show real comment and add comment
-3. check out add feedback and edit feedback page.
-4. add real data in roadmap page. and use useoptimistic ui
+1. Downgrade bug . if i upvote , ui try to upvote again. fix
+2. add real data in roadmap page. and use useoptimistic ui
+3. genereta dynamic metadata with user data. ( postponed )
+4. check out create feedback and edit feedback page.
 5. lastly add user settinngs page.
 
 - user add product this page
