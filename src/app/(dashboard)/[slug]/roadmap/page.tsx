@@ -104,6 +104,7 @@ export default function RoadmapPage({
 
       const initialItems: Record<string, KanbanItem> = {}
 
+      /* eslint-disable-next-line */
       suggestions.forEach((suggestion: any) => {
         const { id, title, description, category, status, votes, comments } =
           suggestion
@@ -218,7 +219,7 @@ export default function RoadmapPage({
             newStatus: newColumnId as 'planned' | 'in-progress' | 'live',
           },
           {
-            onError: (error, variables, context) => {
+            onError: () => {
               setColumns(previousColumns)
               setItems(previousItems)
             },
@@ -284,7 +285,7 @@ export default function RoadmapPage({
               newStatus: overColumnId as 'planned' | 'in-progress' | 'live',
             },
             {
-              onError: (error, variables, context) => {
+              onError: () => {
                 setColumns(previousColumns)
                 setItems(previousItems)
               },
@@ -421,7 +422,7 @@ function KanbanCard({ item, columnType, isDragging = false }: KanbanCardProps) {
     const previous = localUpvotes
     setLocalUpvotes((prev) => prev + 1)
     upvote(undefined, {
-      onError: (error) => {
+      onError: () => {
         setLocalUpvotes(previous)
       },
     })
@@ -432,7 +433,7 @@ function KanbanCard({ item, columnType, isDragging = false }: KanbanCardProps) {
     const previous = localUpvotes
     setLocalUpvotes((prev) => prev - 1)
     downvote(undefined, {
-      onError: (error) => {
+      onError: () => {
         setLocalUpvotes(previous)
       },
     })

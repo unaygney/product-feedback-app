@@ -26,8 +26,12 @@ export const useUpdateSuggestionStatus = () => {
       await queryClient.invalidateQueries({ queryKey: ['suggestions'] })
       await queryClient.invalidateQueries({ queryKey: ['product'] })
     },
-    onError: (err: any) => {
-      toast.error(err.message)
+    onError: (err: unknown) => {
+      if (err instanceof Error) {
+        toast.error(err.message)
+      } else {
+        toast.error('An unknown error occurred')
+      }
     },
   })
 }
