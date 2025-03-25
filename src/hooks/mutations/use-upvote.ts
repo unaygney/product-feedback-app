@@ -14,7 +14,10 @@ export const useUpvoteMutation = (suggestionId: string) => {
     onSuccess: async () => {
       toast.success('Upvoted!')
       await queryClient.invalidateQueries({
-        queryKey: ['isVoted', suggestionId],
+        queryKey: ['isVoted ', suggestionId],
+      })
+      await queryClient.invalidateQueries({
+        queryKey: ['product'],
       })
     },
     onError: (err) => {
