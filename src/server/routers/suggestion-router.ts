@@ -1,4 +1,5 @@
 import { j, privateProcedure, publicProcedure } from '../jstack'
+import { eq } from 'drizzle-orm'
 import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
 
@@ -40,6 +41,7 @@ export const suggeestionRouter = j.router({
 
       return c.superjson('Suggestion created!', 201)
     }),
+
   get: publicProcedure
     .input(
       z.object({
@@ -50,7 +52,7 @@ export const suggeestionRouter = j.router({
       const { id } = input
       const { db } = ctx
 
-      const suggestion = await db.query.suggestion.findFirst({
+      const suggestionResult = await db.query.suggestion.findFirst({
         where: (s, { eq }) => eq(s.id, id),
         with: {
           votes: true,
@@ -62,12 +64,46 @@ export const suggeestionRouter = j.router({
         },
       })
 
-      if (!suggestion) {
+      if (!suggestionResult) {
         throw new HTTPException(404, {
           message: 'Suggestion not found',
         })
       }
 
-      return c.superjson(suggestion)
+      return c.superjson(suggestionResult)
+    }),
+
+  updateStatus: privateProcedure
+    .input(
+      z.object({
+        suggestionId: z.string().uuid(),
+
+        newStatus: z.enum(['planned', 'in-progress', 'live']),
+      })
+    )
+    .mutation(async ({ ctx, c, input }) => {
+      const { suggestionId, newStatus } = input
+      const { db, user } = ctx
+
+      const suggestionToUpdate = await db.query.suggestion.findFirst({
+        where: (s, { eq }) => eq(s.id, suggestionId),
+      })
+
+      if (!suggestionToUpdate) {
+        throw new HTTPException(404, { message: 'Suggestion not found' })
+      }
+
+      if (user.id !== suggestionToUpdate.userId) {
+        throw new HTTPException(403, {
+          message: 'You are not allowed to update this suggestion',
+        })
+      }
+
+      await db
+        .update(suggestion)
+        .set({ status: newStatus })
+        .where(eq(suggestion.id, suggestionId))
+
+      return c.superjson({ message: 'Suggestion status updated' })
     }),
 })
