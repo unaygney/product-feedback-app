@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { notFound, usePathname } from 'next/navigation'
 import { use, useState } from 'react'
 
+import { authClient } from '@/lib/auth-client'
 import { cn } from '@/lib/utils'
 
 import CommentForm from '@/components/add-comment-section'
@@ -18,11 +19,12 @@ import { useSuggestion } from '@/hooks/queries/use-suggestion'
 export default function SuggestionDetailPage({
   params,
 }: {
-  params: Promise<{ productName: string; suggestionId: string }>
+  params: Promise<{ slug: string; suggestionId: string }>
 }) {
   const pathname = usePathname()
-  const { suggestionId } = use(params)
+  const { suggestionId, slug } = use(params)
   const { suggestion, isLoading, isError } = useSuggestion(suggestionId)
+  const { data: session } = authClient.useSession()
 
   const [activeReplyId, setActiveReplyId] = useState<string | null>(null)
 
@@ -62,7 +64,17 @@ export default function SuggestionDetailPage({
           <ArrowLeft className="h-4 w-4" />
           <span>Go Back</span>
         </Link>
-        <Button className="bg-blue-600 hover:bg-blue-700">Edit Feedback</Button>
+        {session?.user?.id === suggestion.userId && (
+          <Link
+            href={`/${slug}/update-feedback/${suggestion.id}`}
+            className={cn(
+              buttonVariants({ variant: 'link' }),
+              'bg-blue-600 text-white hover:bg-blue-700'
+            )}
+          >
+            Edit Feedback
+          </Link>
+        )}
       </div>
 
       {/* Feature Card */}
