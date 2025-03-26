@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useQueryState } from 'nuqs'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
@@ -22,6 +23,11 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function AuthPageContent() {
+  const [tab, setTab] = useQueryState<'login' | 'register'>('tab', {
+    defaultValue: 'login',
+    parse: (value) => (value === 'register' ? 'register' : 'login'),
+  })
+
   const [token, setToken] = useState<string>('')
   const router = useRouter()
 
@@ -112,7 +118,11 @@ export default function AuthPageContent() {
                 Sign in to your account or create a new one
               </p>
             </div>
-            <Tabs defaultValue={'login'} className="space-y-4">
+            <Tabs
+              value={tab}
+              onValueChange={(val) => setTab(val as 'login' | 'register')}
+              className="space-y-4"
+            >
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login">Login</TabsTrigger>
                 <TabsTrigger value="register">Register</TabsTrigger>
