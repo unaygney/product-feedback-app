@@ -1,29 +1,54 @@
 'use client'
 
-import { ArrowLeft, ChevronUp } from 'lucide-react'
+import { ArrowLeft, ChevronUp, Loader2 } from 'lucide-react'
+import nameInitials from 'name-initials'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { notFound, usePathname } from 'next/navigation'
 import { use, useState } from 'react'
 
+import { authClient } from '@/lib/auth-client'
 import { cn } from '@/lib/utils'
 
+import CommentForm from '@/components/add-comment-section'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
+
+import { useSuggestion } from '@/hooks/queries/use-suggestion'
 
 export default function SuggestionDetailPage({
   params,
 }: {
-  params: Promise<{ productName: string; suggestionId: string }>
+  params: Promise<{ slug: string; suggestionId: string }>
 }) {
-  const [commentText, setCommentText] = useState('')
-  const maxCharacters = 250
-
   const pathname = usePathname()
+  const { suggestionId, slug } = use(params)
+  const { suggestion, isLoading, isError } = useSuggestion(suggestionId)
+  const { data: session } = authClient.useSession()
 
-  const { productName, suggestionId } = use(params)
-  console.log(productName, suggestionId)
+  const [activeReplyId, setActiveReplyId] = useState<string | null>(null)
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-6 md:py-8">
+        <div className="flex h-32 items-center justify-center">
+          <Loader2 className="animate-spin text-purple-500" />
+        </div>
+      </div>
+    )
+  }
+
+  if (isError || !suggestion) {
+    return notFound()
+  }
+
+  const handleReplyClick = (commentId: string) => {
+    if (activeReplyId === commentId) {
+      setActiveReplyId(null)
+    } else {
+      setActiveReplyId(commentId)
+    }
+  }
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 md:py-8">
@@ -39,7 +64,17 @@ export default function SuggestionDetailPage({
           <ArrowLeft className="h-4 w-4" />
           <span>Go Back</span>
         </Link>
-        <Button className="bg-blue-600 hover:bg-blue-700">Edit Feedback</Button>
+        {session?.user?.id === suggestion.userId && (
+          <Link
+            href={`/${slug}/update-feedback/${suggestion.id}`}
+            className={cn(
+              buttonVariants({ variant: 'link' }),
+              'bg-blue-600 text-white hover:bg-blue-700'
+            )}
+          >
+            Edit Feedback
+          </Link>
+        )}
       </div>
 
       {/* Feature Card */}
@@ -52,29 +87,28 @@ export default function SuggestionDetailPage({
               className="flex h-auto flex-col rounded-lg bg-gray-50 p-2 hover:bg-gray-100"
             >
               <ChevronUp className="h-4 w-4 text-blue-600" />
-              <span className="font-bold text-gray-800">99</span>
+              <span className="font-bold text-gray-800">
+                {suggestion?.votes.length}
+              </span>
             </Button>
           </div>
           <div className="flex-1">
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-gray-800">
-                  Add a dark theme option
+                  {suggestion?.title}
                 </h2>
-                <p className="mt-1 text-gray-600">
-                  It would help people with light sensitivities and who prefer
-                  dark mode.
-                </p>
+                <p className="mt-1 text-gray-600">{suggestion?.description}</p>
                 <Badge
                   variant="outline"
                   className="mt-3 bg-blue-50 text-blue-700 hover:bg-blue-100"
                 >
-                  Feature
+                  {suggestion?.category}
                 </Badge>
               </div>
               <div className="ml-4 flex items-center gap-2">
                 <Badge variant="secondary" className="flex items-center gap-1">
-                  <span>4</span>
+                  <span>{suggestion?.comments.length}</span>
                 </Badge>
               </div>
             </div>
@@ -84,181 +118,103 @@ export default function SuggestionDetailPage({
 
       {/* Comments Section */}
       <div className="mb-6 rounded-lg bg-white p-6 shadow-sm">
-        <h3 className="mb-6 text-lg font-semibold text-gray-800">4 Comments</h3>
+        <h3 className="mb-6 text-lg font-semibold text-gray-800">
+          {suggestion?.comments.length === 0
+            ? 'No Comments Yet'
+            : `${suggestion?.comments.length} Comments`}
+        </h3>
 
         <div className="space-y-6">
-          {/* Comment 1 */}
-          <div className="border-b pb-6">
-            <div className="flex gap-4">
-              <Avatar className="h-10 w-10">
-                <AvatarImage
-                  src="/placeholder.svg?height=40&width=40"
-                  alt="Elijah Moss"
-                />
-                <AvatarFallback>EM</AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="flex flex-wrap items-start justify-between">
-                  <div>
-                    <h4 className="font-semibold text-gray-800">Elijah Moss</h4>
-                    <p className="text-sm text-gray-500">@hexagon.bestagon</p>
+          {suggestion?.comments.map((comment) =>
+            comment.parentCommentId ? (
+              <div key={comment.id} className="border-b pb-6">
+                <div className="flex gap-4">
+                  <div className="hidden w-10 sm:block"></div>
+                  <div className="flex-1 border-l-2 border-gray-200 pl-4 sm:pl-6">
+                    <div className="flex gap-4">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage
+                          src="/placeholder.svg?height=40&width=40"
+                          alt={comment.author.name}
+                        />
+                        <AvatarFallback>
+                          {nameInitials(comment.author.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex flex-wrap items-start justify-between">
+                          <div>
+                            <h4 className="font-semibold text-gray-800">
+                              {comment.author.name}
+                            </h4>
+                          </div>
+                          <Button
+                            variant="link"
+                            className="h-auto p-0 text-blue-600"
+                            onClick={() => handleReplyClick(comment.id)}
+                          >
+                            Reply
+                          </Button>
+                        </div>
+                        <p className="mt-2 text-gray-700">{comment.content}</p>
+                        {activeReplyId === comment.id && (
+                          <div className="mt-4">
+                            <CommentForm
+                              suggestionId={suggestionId}
+                              parentCommentId={comment.id}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <Button variant="link" className="h-auto p-0 text-blue-600">
-                    Reply
-                  </Button>
                 </div>
-                <p className="mt-2 text-gray-700">
-                  Also, please allow styles to be applied based on system
-                  preferences. I would love to be able to browse Frontend Mentor
-                  in the evening after my devices dark mode turns on without the
-                  bright background it currently has.
-                </p>
               </div>
-            </div>
-          </div>
-
-          {/* Comment 2 */}
-          <div className="border-b pb-6">
-            <div className="flex gap-4">
-              <Avatar className="h-10 w-10">
-                <AvatarImage
-                  src="/placeholder.svg?height=40&width=40"
-                  alt="James Skinner"
-                />
-                <AvatarFallback>JS</AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="flex flex-wrap items-start justify-between">
-                  <div>
-                    <h4 className="font-semibold text-gray-800">
-                      James Skinner
-                    </h4>
-                    <p className="text-sm text-gray-500">@hummingbird1</p>
-                  </div>
-                  <Button variant="link" className="h-auto p-0 text-blue-600">
-                    Reply
-                  </Button>
-                </div>
-                <p className="mt-2 text-gray-700">
-                  Second this! I do a lot of late night coding and reading.
-                  Adding a dark theme can be great for preventing eye strain and
-                  the headaches that result. Its also quite a trend with modern
-                  apps and apparently saves battery life.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Comment 3 - Reply to Comment 2 */}
-          <div className="border-b pb-6">
-            <div className="flex gap-4">
-              <div className="hidden w-10 sm:block"></div>
-              <div className="flex-1 border-l-2 border-gray-200 pl-4 sm:pl-6">
+            ) : (
+              <div key={comment.id} className="border-b pb-6">
                 <div className="flex gap-4">
                   <Avatar className="h-10 w-10">
                     <AvatarImage
                       src="/placeholder.svg?height=40&width=40"
-                      alt="Anne Valentine"
+                      alt={comment.author.name}
                     />
-                    <AvatarFallback>AV</AvatarFallback>
+                    <AvatarFallback>
+                      {nameInitials(comment.author.name)}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
                     <div className="flex flex-wrap items-start justify-between">
                       <div>
                         <h4 className="font-semibold text-gray-800">
-                          Anne Valentine
+                          {comment.author.name}
                         </h4>
-                        <p className="text-sm text-gray-500">@annev1990</p>
                       </div>
                       <Button
                         variant="link"
                         className="h-auto p-0 text-blue-600"
+                        onClick={() => handleReplyClick(comment.id)}
                       >
                         Reply
                       </Button>
                     </div>
-                    <p className="mt-2 text-gray-700">
-                      <span className="font-medium text-purple-600">
-                        @hummingbird1
-                      </span>{' '}
-                      While waiting for dark mode, there are browser extensions
-                      that will also do the job. Search for dark theme followed
-                      by your browser. There might be a need to turn off the
-                      extension for sites with naturally black backgrounds
-                      though.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Comment 4 - Reply to Comment 3 */}
-          <div>
-            <div className="flex gap-4">
-              <div className="hidden w-10 sm:block"></div>
-              <div className="flex-1 border-l-2 border-gray-200 pl-4 sm:pl-6">
-                <div className="flex gap-4">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage
-                      src="/placeholder.svg?height=40&width=40"
-                      alt="Ryan Welles"
-                    />
-                    <AvatarFallback>RW</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex flex-wrap items-start justify-between">
-                      <div>
-                        <h4 className="font-semibold text-gray-800">
-                          Ryan Welles
-                        </h4>
-                        <p className="text-sm text-gray-500">@voyager.344</p>
+                    <p className="mt-2 text-gray-700">{comment.content}</p>
+                    {activeReplyId === comment.id && (
+                      <div className="mt-4">
+                        <CommentForm
+                          suggestionId={suggestionId}
+                          parentCommentId={comment.id}
+                        />
                       </div>
-                      <Button
-                        variant="link"
-                        className="h-auto p-0 text-blue-600"
-                      >
-                        Reply
-                      </Button>
-                    </div>
-                    <p className="mt-2 text-gray-700">
-                      <span className="font-medium text-purple-600">
-                        @annev1990
-                      </span>{' '}
-                      Good point! Using any kind of style extension is great and
-                      can be highly customizable, like the ability to change
-                      contrast and brightness. Id prefer not to use one of such
-                      extensions, however, for security and privacy reasons.
-                    </p>
+                    )}
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            )
+          )}
         </div>
       </div>
 
-      {/* Add Comment Section */}
-      <div className="rounded-lg bg-white p-6 shadow-sm">
-        <h3 className="mb-6 text-lg font-semibold text-gray-800">
-          Add Comment
-        </h3>
-        <Textarea
-          placeholder="Type your comment here"
-          className="mb-4 min-h-24"
-          value={commentText}
-          onChange={(e) => setCommentText(e.target.value)}
-          maxLength={maxCharacters}
-        />
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-500">
-            {maxCharacters - commentText.length} Characters left
-          </span>
-          <Button className="bg-purple-600 hover:bg-purple-700">
-            Post Comment
-          </Button>
-        </div>
-      </div>
+      <CommentForm suggestionId={suggestionId} />
     </div>
   )
 }

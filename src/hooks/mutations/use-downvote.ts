@@ -16,6 +16,10 @@ export const useDownvoteMutation = (suggestionId: string) => {
       await queryClient.invalidateQueries({
         queryKey: ['isVoted', suggestionId],
       })
+
+      await queryClient.invalidateQueries({
+        queryKey: ['product'],
+      })
     },
     onError: (err) => {
       toast.error(err.message)

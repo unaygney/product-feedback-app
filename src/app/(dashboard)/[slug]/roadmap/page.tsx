@@ -22,17 +22,27 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { ArrowLeft, ChevronUp, GripVertical, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { use, useState } from 'react'
+import { use, useEffect, useState } from 'react'
+
+import { getStatusColor, getTypeBg } from '@/lib/utils'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 
+import { useProduct } from '@/hooks'
+import {
+  useDownvoteMutation,
+  useUpdateSuggestionStatus,
+  useUpvoteMutation,
+  useVoteStatus,
+} from '@/hooks'
+
 interface KanbanItem {
   id: string
   title: string
   description: string
-  type: 'Feature' | 'Enhancement' | 'Bug'
+  type: string
   upvotes: number
   comments: number
   columnId: string
@@ -50,122 +60,105 @@ interface KanbanColumn {
 export default function RoadmapPage({
   params,
 }: {
-  params: Promise<{ productName: string }>
+  params: Promise<{ slug: string }>
 }) {
-  const { productName } = use(params)
-
+  const { slug } = use(params)
   const router = useRouter()
+  const { product } = useProduct(slug)
+  const suggestions = product?.suggestions
 
-  const [columns, setColumns] = useState<KanbanColumn[]>([
-    {
-      id: 'planned',
-      title: 'Planned',
-      count: 2,
-      description: 'Ideas prioritized for research',
-      color: 'bg-orange-300',
-      items: ['item-1', 'item-2'],
-    },
-    {
-      id: 'in-progress',
-      title: 'In-Progress',
-      count: 3,
-      description: 'Currently being developed',
-      color: 'bg-purple-500',
-      items: ['item-3', 'item-4', 'item-5'],
-    },
-    {
-      id: 'live',
-      title: 'Live',
-      count: 1,
-      description: 'Released features',
-      color: 'bg-blue-400',
-      items: ['item-6'],
-    },
-  ])
+  const [columns, setColumns] = useState<KanbanColumn[]>([])
+  const [items, setItems] = useState<Record<string, KanbanItem>>({})
 
-  const [items, setItems] = useState<Record<string, KanbanItem>>({
-    'item-1': {
-      id: 'item-1',
-      title: 'More comprehensive reports',
-      description:
-        'It would be great to see a more detailed breakdown of solutions.',
-      type: 'Feature',
-      upvotes: 123,
-      comments: 2,
-      columnId: 'planned',
-    },
-    'item-2': {
-      id: 'item-2',
-      title: 'Learning paths',
-      description:
-        'Sequenced projects for different goals to help people improve.',
-      type: 'Feature',
-      upvotes: 28,
-      comments: 1,
-      columnId: 'planned',
-    },
-    'item-3': {
-      id: 'item-3',
-      title: 'One-click portfolio generation',
-      description:
-        'Add ability to create professional looking portfolio from profile.',
-      type: 'Feature',
-      upvotes: 62,
-      comments: 1,
-      columnId: 'in-progress',
-    },
-    'item-4': {
-      id: 'item-4',
-      title: 'Bookmark challenges',
-      description: 'Be able to bookmark challenges to take later on.',
-      type: 'Feature',
-      upvotes: 31,
-      comments: 1,
-      columnId: 'in-progress',
-    },
-    'item-5': {
-      id: 'item-5',
-      title: 'Animated solution screenshots',
-      description:
-        "Screenshots of solutions with animations don't display correctly.",
-      type: 'Bug',
-      upvotes: 9,
-      comments: 0,
-      columnId: 'in-progress',
-    },
-    'item-6': {
-      id: 'item-6',
-      title: 'Add micro-interactions',
-      description: 'Small animations at specific points can add delight.',
-      type: 'Enhancement',
-      upvotes: 71,
-      comments: 2,
-      columnId: 'live',
-    },
-  })
+  // Mutation hook: status güncellemesi için kullanılıyor.
+  const updateStatusMutation = useUpdateSuggestionStatus()
 
-  // State for active dragging
+  useEffect(() => {
+    if (suggestions && suggestions.length > 0 && columns.length === 0) {
+      const initialColumns: Record<
+        string,
+        Omit<KanbanColumn, 'count'> & { items: string[] }
+      > = {
+        planned: {
+          id: 'planned',
+          title: 'Planned',
+          description: 'Ideas prioritized for research',
+          color: 'bg-orange-300',
+          items: [],
+        },
+        'in-progress': {
+          id: 'in-progress',
+          title: 'In-Progress',
+          description: 'Currently being developed',
+          color: 'bg-purple-500',
+          items: [],
+        },
+        live: {
+          id: 'live',
+          title: 'Live',
+          description: 'Released features',
+          color: 'bg-blue-400',
+          items: [],
+        },
+      }
+
+      const initialItems: Record<string, KanbanItem> = {}
+
+      /* eslint-disable-next-line */
+      suggestions.forEach((suggestion: any) => {
+        const { id, title, description, category, status, votes, comments } =
+          suggestion
+
+        const categoryMapping: Record<string, string> = {
+          bug: 'Bug',
+          enhancement: 'Enhancement',
+          feature: 'Feature',
+          ui: 'UI',
+          ux: 'UX',
+        }
+        const type = categoryMapping[category] || category
+
+        initialItems[id] = {
+          id,
+          title,
+          description,
+          type,
+          upvotes: votes ? votes.length : 0,
+          comments: comments ? comments.length : 0,
+          columnId: status,
+        }
+
+        if (initialColumns[status]) {
+          initialColumns[status]!.items.push(id)
+        } else {
+          initialColumns['planned']!.items.push(id)
+        }
+      })
+
+      const columnsArray: KanbanColumn[] = Object.values(initialColumns).map(
+        (col) => ({
+          ...col,
+          count: col.items.length,
+        })
+      )
+
+      setColumns(columnsArray)
+      setItems(initialItems)
+    }
+  }, [suggestions, columns.length])
+
   const [activeId, setActiveId] = useState<string | null>(null)
   const activeItem = activeId ? items[activeId] : null
 
-  // Configure sensors for drag and drop
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
-  // Handle drag start
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string)
   }
 
-  // Handle drag end
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
 
@@ -174,66 +167,76 @@ export default function RoadmapPage({
       return
     }
 
-    const activeId = active.id as string
+    const activeIdLocal = active.id as string
     const overId = over.id as string
+    const activeItemLocal = items[activeIdLocal]
+    const activeColumnId = activeItemLocal?.columnId
 
-    // Find the columns
-    const activeItem = items[activeId]
-    const activeColumnId = activeItem?.columnId
-
-    // Check if the item is dropped on a column
     const isColumn = columns.some((col) => col.id === overId)
 
     if (isColumn) {
-      // Item dropped on a column
       const newColumnId = overId
 
       if (activeColumnId !== newColumnId) {
-        // Update the columns
-        setColumns((prevColumns) => {
-          return prevColumns.map((col) => {
-            // Remove from old column
+        // Snapshot: mevcut state'leri saklıyoruz
+        const previousColumns = columns
+        const previousItems = items
+
+        // Optimistic UI update: yerel state hemen güncelleniyor
+        setColumns((prevColumns) =>
+          prevColumns.map((col) => {
             if (col.id === activeColumnId) {
               return {
                 ...col,
-                items: col.items.filter((id) => id !== activeId),
+                items: col.items.filter((id) => id !== activeIdLocal),
                 count: col.count - 1,
               }
             }
-            // Add to new column
             if (col.id === newColumnId) {
               return {
                 ...col,
-                items: [...col.items, activeId],
+                items: [...col.items, activeIdLocal],
                 count: col.count + 1,
               }
             }
             return col
           })
-        })
+        )
 
-        // Update the item
         setItems((prevItems) => ({
           ...prevItems,
-          [activeId]: {
-            ...prevItems[activeId],
+          [activeIdLocal]: {
+            ...prevItems[activeIdLocal]!,
             columnId: newColumnId,
-          } as KanbanItem,
+          },
         }))
+
+        // Optimistic mutation: sunucuya güncelleme isteği gönderiliyor.
+        // Hata durumunda snapshot ile rollback yapılır.
+        updateStatusMutation.mutate(
+          {
+            suggestionId: activeIdLocal,
+            newStatus: newColumnId as 'planned' | 'in-progress' | 'live',
+          },
+          {
+            onError: () => {
+              setColumns(previousColumns)
+              setItems(previousItems)
+            },
+          }
+        )
       }
     } else {
-      // Item dropped on another item
+      // Kart başka bir kartın üzerine bırakıldıysa (aynı kolonda sıralama veya farklı kolona taşıma)
       const overItem = items[overId]
       const overColumnId = overItem?.columnId
 
       if (activeColumnId === overColumnId) {
-        // Same column reordering
-        setColumns((prevColumns) => {
-          return prevColumns.map((col) => {
+        setColumns((prevColumns) =>
+          prevColumns.map((col) => {
             if (col.id === activeColumnId) {
-              const oldIndex = col.items.indexOf(activeId)
+              const oldIndex = col.items.indexOf(activeIdLocal)
               const newIndex = col.items.indexOf(overId)
-
               return {
                 ...col,
                 items: arrayMove(col.items, oldIndex, newIndex),
@@ -241,25 +244,24 @@ export default function RoadmapPage({
             }
             return col
           })
-        })
+        )
       } else {
-        // Moving between columns
-        setColumns((prevColumns) => {
-          return prevColumns.map((col) => {
-            // Remove from old column
+        const previousColumns = columns
+        const previousItems = items
+
+        setColumns((prevColumns) =>
+          prevColumns.map((col) => {
             if (col.id === activeColumnId) {
               return {
                 ...col,
-                items: col.items.filter((id) => id !== activeId),
+                items: col.items.filter((id) => id !== activeIdLocal),
                 count: col.count - 1,
               }
             }
-            // Add to new column
             if (col.id === overColumnId) {
               const newItems = [...col.items]
               const overIndex = newItems.indexOf(overId)
-              newItems.splice(overIndex, 0, activeId)
-
+              newItems.splice(overIndex, 0, activeIdLocal)
               return {
                 ...col,
                 items: newItems,
@@ -268,16 +270,28 @@ export default function RoadmapPage({
             }
             return col
           })
-        })
-
-        // Update the item
-        setItems((prevItems) => ({
-          ...prevItems,
-          [activeId]: {
-            ...prevItems[activeId],
-            columnId: overColumnId,
-          } as KanbanItem,
-        }))
+        )
+        if (overColumnId) {
+          setItems((prevItems) => ({
+            ...prevItems,
+            [activeIdLocal]: {
+              ...prevItems[activeIdLocal]!,
+              columnId: overColumnId,
+            },
+          }))
+          updateStatusMutation.mutate(
+            {
+              suggestionId: activeIdLocal,
+              newStatus: overColumnId as 'planned' | 'in-progress' | 'live',
+            },
+            {
+              onError: () => {
+                setColumns(previousColumns)
+                setItems(previousItems)
+              },
+            }
+          )
+        }
       }
     }
 
@@ -300,7 +314,7 @@ export default function RoadmapPage({
               <h1 className="text-xl font-bold">Roadmap</h1>
             </div>
             <Button
-              onClick={() => router.push(`/${productName}/create-feedback`)}
+              onClick={() => router.push(`/${slug}/create-feedback`)}
               className="bg-purple-500 hover:bg-purple-600"
             >
               <Plus className="mr-1 h-4 w-4" /> Add Feedback
@@ -320,7 +334,7 @@ export default function RoadmapPage({
               <KanbanColumn
                 key={column.id}
                 column={column}
-                items={column?.items
+                items={column.items
                   .map((id) => items[id])
                   .filter((item): item is KanbanItem => item !== undefined)}
               />
@@ -354,18 +368,17 @@ interface KanbanColumnProps {
 
 function KanbanColumn({ column, items }: KanbanColumnProps) {
   const { id, title, count, description, color } = column
-
   const { setNodeRef, isOver } = useSortable({
     id: id,
-    data: {
-      type: 'column',
-    },
+    data: { type: 'column' },
   })
 
   return (
     <div
       ref={setNodeRef}
-      className={`flex flex-col gap-4 rounded-lg p-2 transition-colors ${isOver ? 'bg-slate-100' : ''}`}
+      className={`flex flex-col gap-4 rounded-lg p-2 transition-colors ${
+        isOver ? 'bg-slate-100' : ''
+      }`}
     >
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
@@ -398,43 +411,49 @@ interface KanbanCardProps {
 }
 
 function KanbanCard({ item, columnType, isDragging = false }: KanbanCardProps) {
-  const [upvotes, setUpvotes] = useState(item.upvotes)
+  // Upvote/Downvote entegrasyonu: Optimistic UI güncellemesi yapıyoruz.
+  const [localUpvotes, setLocalUpvotes] = useState(item.upvotes)
+  const { data: isVoted } = useVoteStatus(item.id)
+  const { mutate: upvote } = useUpvoteMutation(item.id)
+  const { mutate: downvote } = useDownvoteMutation(item.id)
 
-  const getStatusColor = () => {
-    switch (columnType) {
-      case 'Planned':
-        return 'text-orange-500'
-      case 'In-Progress':
-        return 'text-purple-500'
-      case 'Live':
-        return 'text-blue-500'
-      default:
-        return 'text-gray-500'
-    }
+  const handleUpvote = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    const previous = localUpvotes
+    setLocalUpvotes((prev) => prev + 1)
+    upvote(undefined, {
+      onError: () => {
+        setLocalUpvotes(previous)
+      },
+    })
   }
 
-  const getTypeBg = () => {
-    switch (item.type) {
-      case 'Feature':
-        return 'bg-blue-100 text-blue-700'
-      case 'Enhancement':
-        return 'bg-purple-100 text-purple-700'
-      case 'Bug':
-        return 'bg-red-100 text-red-700'
-      default:
-        return 'bg-gray-100 text-gray-700'
-    }
+  const handleDownvote = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    const previous = localUpvotes
+    setLocalUpvotes((prev) => prev - 1)
+    downvote(undefined, {
+      onError: () => {
+        setLocalUpvotes(previous)
+      },
+    })
   }
 
   return (
     <Card
-      className={`overflow-hidden shadow-sm transition-all ${isDragging ? 'opacity-70 shadow-md' : 'hover:shadow-md'}`}
+      className={`overflow-hidden shadow-sm transition-all ${
+        isDragging ? 'opacity-70 shadow-md' : 'hover:shadow-md'
+      }`}
     >
       <CardHeader className="p-4 pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className={`h-2 w-2 rounded-full ${getStatusColor()}`}></div>
-            <span className={`text-sm font-medium ${getStatusColor()}`}>
+            <div
+              className={`h-2 w-2 rounded-full ${getStatusColor(item.type)}`}
+            ></div>
+            <span
+              className={`text-sm font-medium ${getStatusColor(item.type)}`}
+            >
               {columnType}
             </span>
           </div>
@@ -449,7 +468,7 @@ function KanbanCard({ item, columnType, isDragging = false }: KanbanCardProps) {
         <div className="mt-2">
           <Badge
             variant="outline"
-            className={`${getTypeBg()} border-0 text-xs font-normal`}
+            className={`${getTypeBg(item.type)} border-0 text-xs font-normal`}
           >
             {item.type}
           </Badge>
@@ -461,15 +480,22 @@ function KanbanCard({ item, columnType, isDragging = false }: KanbanCardProps) {
             variant="ghost"
             size="icon"
             className="h-6 w-6 rounded-full"
-            onClick={() => setUpvotes((prev) => prev + 1)}
+            onClick={(e) => {
+              e.preventDefault()
+              if (isVoted) {
+                handleDownvote(e)
+              } else {
+                handleUpvote(e)
+              }
+            }}
           >
             <ChevronUp className="h-4 w-4" />
           </Button>
-          <span className="text-sm text-slate-600">{upvotes}</span>
+          <span className="text-sm text-slate-600">{localUpvotes || 0}</span>
         </div>
         <div className="flex items-center gap-1">
           <div className="h-2 w-2 rounded-full bg-slate-300"></div>
-          <span className="text-sm text-slate-600">{item.comments}</span>
+          <span className="text-sm text-slate-600">{item.comments || 0}</span>
         </div>
       </CardFooter>
     </Card>
@@ -486,9 +512,7 @@ function SortableKanbanCard({ item, columnType }: KanbanCardProps) {
     isDragging,
   } = useSortable({
     id: item.id,
-    data: {
-      type: 'item',
-    },
+    data: { type: 'item' },
   })
 
   const style = {

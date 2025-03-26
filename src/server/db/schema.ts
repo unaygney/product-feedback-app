@@ -96,6 +96,9 @@ export const suggestion = pgTable('suggestion', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
+function getCommentId() {
+  return comment.id
+}
 
 export const comment = pgTable('comment', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -106,6 +109,9 @@ export const comment = pgTable('comment', {
   userId: text('user_id')
     .notNull()
     .references(() => user.id),
+  parentCommentId: uuid('parent_comment_id').references(getCommentId, {
+    onDelete: 'cascade',
+  }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })

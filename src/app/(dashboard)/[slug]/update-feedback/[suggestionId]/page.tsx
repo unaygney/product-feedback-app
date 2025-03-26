@@ -1,14 +1,9 @@
 'use client'
 
-import { useMutation } from '@tanstack/react-query'
-import { ChevronLeft, Plus } from 'lucide-react'
+import { ChevronLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
-import type React from 'react'
+import React, { use, useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import toast from 'react-hot-toast'
-
-import { client } from '@/lib/client'
-import { CreateSuggestionInput } from '@/lib/form-schemas'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,42 +16,83 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 
-export default function CreateFeedback({ slug }: { slug: string }) {
+import { useSuggestion, useUpdateSuggestion } from '@/hooks'
+
+type UpdateSuggestionInput = {
+  title: string
+  category: string
+  description: string
+}
+
+export default function UpdateFeedbackPage({
+  params,
+}: {
+  params: Promise<{ suggestionId: string; slug: string }>
+}) {
+  const { suggestionId, slug } = use(params)
+  const {
+    suggestion,
+    isLoading: isSuggestionLoading,
+    isError,
+  } = useSuggestion(suggestionId)
   const {
     register,
     handleSubmit,
     control,
     reset,
-    formState: { errors },
-  } = useForm<CreateSuggestionInput>()
-
-  const { mutate: createPost, isPending } = useMutation({
-    mutationFn: async (data: CreateSuggestionInput) => {
-      const res = await client.suggestion.create.$post(data)
-      return res
-    },
-    onSuccess: () => {
-      toast.success('Feedback added successfully!')
-      reset({ title: '', category: undefined, description: '' })
-    },
-    onError: (error) => {
-      if (error instanceof Error) {
-        toast.error(error.message)
-      } else {
-        toast.error('An unknown error occurred')
-      }
+    formState: { errors, isSubmitting },
+  } = useForm<UpdateSuggestionInput>({
+    defaultValues: {
+      title: '',
+      category: '',
+      description: '',
     },
   })
 
-  const onSubmit = (data: CreateSuggestionInput) => {
-    createPost(data)
+  const { mutateAsync } = useUpdateSuggestion()
+
+  useEffect(() => {
+    if (suggestion) {
+      reset({
+        title: suggestion.title,
+        category: suggestion.category,
+        description: suggestion.description,
+      })
+    }
+  }, [suggestion, reset])
+
+  const onSubmit = async (data: UpdateSuggestionInput) => {
+    if (!suggestion || !suggestion.id) {
+      throw new Error('Suggestion is not available')
+    }
+
+    await mutateAsync({
+      suggestionId: suggestion?.id,
+      content: {
+        title: data.title,
+        category: data.category,
+        description: data.description,
+      },
+    })
+  }
+
+  if (isSuggestionLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 text-purple-500" />
+      </div>
+    )
+  }
+
+  if (isError) {
+    throw Error('Suggestion not found in UpdateFeedbackPage')
   }
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-6 lg:p-8">
       <div className="mx-auto max-w-2xl">
         <Link
-          href={{ pathname: `/${slug}` }}
+          href={`/${slug}`}
           className="mb-8 inline-flex items-center text-sm font-medium text-slate-600 hover:text-slate-900"
         >
           <ChevronLeft className="mr-2 h-4 w-4" />
@@ -66,13 +102,13 @@ export default function CreateFeedback({ slug }: { slug: string }) {
         <div className="relative">
           <div className="absolute -top-5 left-6">
             <div className="rounded-full bg-purple-500 p-2 text-white">
-              <Plus className="h-6 w-6" />
+              <ChevronLeft className="h-6 w-6" />
             </div>
           </div>
 
           <div className="rounded-lg bg-white p-6 pt-10 shadow-sm">
             <h1 className="mb-6 text-2xl font-bold text-slate-900">
-              Create New Feedback
+              Update Feedback
             </h1>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -84,6 +120,7 @@ export default function CreateFeedback({ slug }: { slug: string }) {
                   Add a short, descriptive headline
                 </p>
                 <Input
+                  disabled={isSuggestionLoading || isSubmitting}
                   {...register('title', { required: true })}
                   className="w-full"
                 />
@@ -108,6 +145,7 @@ export default function CreateFeedback({ slug }: { slug: string }) {
                       key={field.value}
                       onValueChange={field.onChange}
                       value={field.value}
+                      disabled={isSuggestionLoading || isSubmitting}
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select a category" />
@@ -121,7 +159,6 @@ export default function CreateFeedback({ slug }: { slug: string }) {
                     </Select>
                   )}
                 />
-
                 {errors.category && (
                   <p className="text-sm text-red-500">Category is required</p>
                 )}
@@ -136,6 +173,7 @@ export default function CreateFeedback({ slug }: { slug: string }) {
                   added, etc.
                 </p>
                 <Textarea
+                  disabled={isSuggestionLoading || isSubmitting}
                   {...register('description', { required: true })}
                   className="min-h-[120px]"
                 />
@@ -154,11 +192,11 @@ export default function CreateFeedback({ slug }: { slug: string }) {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isPending}
-                  isLoading={isPending}
+                  disabled={isSubmitting}
+                  isLoading={isSubmitting}
                   className="w-full bg-purple-500 hover:bg-purple-600 sm:w-auto"
                 >
-                  {isPending ? 'Adding...' : 'Add Feedback'}
+                  {isSubmitting ? 'Updating...' : 'Update Feedback'}
                 </Button>
               </div>
             </form>

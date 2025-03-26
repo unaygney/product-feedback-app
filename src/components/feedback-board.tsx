@@ -2,8 +2,9 @@
 
 import { ChevronUp, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
-import { notFound, useRouter } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { usePathname } from 'next/navigation'
+import { useQueryState } from 'nuqs'
 
 import { cn } from '@/lib/utils'
 
@@ -29,20 +30,20 @@ import { SelectComment, SelectSuggestion, SelectVote } from '@/server/db/db'
 
 function SuggestionItem({
   suggestion,
-  productName,
+  slug,
 }: {
   suggestion: SelectSuggestion & {
     comments: SelectComment[]
     votes: SelectVote[]
   }
-  productName: string
+  slug: string
 }) {
   const { data: isVoted } = useVoteStatus(suggestion.id)
   const { mutate: upvote } = useUpvoteMutation(suggestion.id)
   const { mutate: downvote } = useDownvoteMutation(suggestion.id)
 
   return (
-    <Link prefetch={true} href={`/${productName}/${suggestion.id}`}>
+    <Link prefetch={true} href={`/${slug}/${suggestion.id}`}>
       <Card className="flex flex-row gap-6 p-6">
         <Button
           variant="secondary"
@@ -82,7 +83,18 @@ function SuggestionItem({
 }
 
 export default function FeedbackBoard({ slug }: { slug: string }) {
-  const router = useRouter()
+  const [sort, setSort] = useQueryState<'most' | 'least' | 'comments'>('sort', {
+    defaultValue: 'most',
+    parse: (value) => value as 'most' | 'least' | 'comments',
+  })
+  const [category, setCategory] = useQueryState<
+    'feature' | 'ui' | 'ux' | 'enhancement' | 'bug' | undefined
+  >('category', {
+    defaultValue: undefined,
+    parse: (value) =>
+      value as 'feature' | 'ui' | 'ux' | 'enhancement' | 'bug' | undefined,
+  })
+
   const pathname = usePathname()
 
   const { product } = useProduct(slug)
@@ -113,9 +125,13 @@ export default function FeedbackBoard({ slug }: { slug: string }) {
                     key={c}
                     variant="secondary"
                     className="cursor-pointer bg-blue-50 text-blue-700 capitalize hover:bg-blue-50"
-                    onClick={() =>
-                      router.push(`/${product.name}?category=${c}`)
-                    }
+                    onClick={() => {
+                      if (category === c) {
+                        setCategory(null)
+                      } else {
+                        setCategory(c)
+                      }
+                    }}
                   >
                     {c}
                   </Badge>
@@ -135,7 +151,7 @@ export default function FeedbackBoard({ slug }: { slug: string }) {
                     })
                   )}
                   prefetch={true}
-                  href={`/${product.name}/roadmap`}
+                  href={`/${product.slug}/roadmap`}
                 >
                   View
                 </Link>
@@ -200,7 +216,12 @@ export default function FeedbackBoard({ slug }: { slug: string }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-300">Sort by:</span>
-                  <Select defaultValue="most">
+                  <Select
+                    value={sort}
+                    onValueChange={(value) => {
+                      setSort(value as 'most' | 'least' | 'comments')
+                    }}
+                  >
                     <SelectTrigger className="w-[140px] border-0 bg-transparent p-0 text-white">
                       <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
@@ -225,14 +246,30 @@ export default function FeedbackBoard({ slug }: { slug: string }) {
 
             {/* Feedback Items */}
             <div className="flex flex-col gap-4">
-              {product.suggestions.length > 0 ? (
-                product.suggestions.map((suggestion) => (
-                  <SuggestionItem
-                    key={suggestion.id}
-                    suggestion={suggestion}
-                    productName={product.name}
-                  />
-                ))
+              {product.suggestions.filter((s) =>
+                category ? s.category === category : true
+              ).length > 0 ? (
+                product.suggestions
+                  .filter((s) => (category ? s.category === category : true))
+                  .sort((a, b) => {
+                    if (sort === 'most') {
+                      return (b.votes?.length || 0) - (a.votes?.length || 0)
+                    } else if (sort === 'least') {
+                      return (a.votes?.length || 0) - (b.votes?.length || 0)
+                    } else if (sort === 'comments') {
+                      return (
+                        (b.comments?.length || 0) - (a.comments?.length || 0)
+                      )
+                    }
+                    return 0
+                  })
+                  .map((suggestion) => (
+                    <SuggestionItem
+                      key={suggestion.id}
+                      suggestion={suggestion}
+                      slug={product.slug}
+                    />
+                  ))
               ) : (
                 <EmptyFeedback />
               )}

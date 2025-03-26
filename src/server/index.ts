@@ -3,6 +3,7 @@ import { cors } from 'hono/cors'
 import { auth } from '@/lib/auth'
 
 import { j } from './jstack'
+import { commentRouter } from './routers/comment-router'
 import { productRouter } from './routers/product-router'
 import { suggeestionRouter } from './routers/suggestion-router'
 import { upvoteRouter } from './routers/upvote-router'
@@ -43,6 +44,7 @@ const appRouter = j.mergeRouters(api, {
   suggestion: suggeestionRouter,
   upvote: upvoteRouter,
   product: productRouter,
+  comment: commentRouter,
 })
 
 export type AppRouter = typeof appRouter
