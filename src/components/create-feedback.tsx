@@ -5,6 +5,7 @@ import { ChevronLeft, Plus } from 'lucide-react'
 import Link from 'next/link'
 import type React from 'react'
 import { Controller, useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
 
 import { client } from '@/lib/client'
 import { CreateSuggestionInput } from '@/lib/form-schemas'
@@ -20,30 +21,33 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 
-export default function CreateFeedback() {
+export default function CreateFeedback({ slug }: { slug: string }) {
   const {
     register,
     handleSubmit,
     control,
+    reset,
     formState: { errors },
   } = useForm<CreateSuggestionInput>()
 
-  // ✅ useMutation component'in en üstünde tanımlanmalı
   const { mutate: createPost, isPending } = useMutation({
     mutationFn: async (data: CreateSuggestionInput) => {
       const res = await client.suggestion.create.$post(data)
       return res
     },
-    onSuccess: (data) => {
-      console.log('Başarılı:', data)
-      // Örneğin yönlendirme veya toast bildirimi koyabilirsin
+    onSuccess: () => {
+      toast.success('Feedback added successfully!')
+      reset({ title: '', category: undefined, description: '' })
     },
     onError: (error) => {
-      console.error('Hata:', error)
+      if (error instanceof Error) {
+        toast.error(error.message)
+      } else {
+        toast.error('An unknown error occurred')
+      }
     },
   })
 
-  // ✅ Sadece mutate çağrılıyor
   const onSubmit = (data: CreateSuggestionInput) => {
     createPost(data)
   }
@@ -52,7 +56,7 @@ export default function CreateFeedback() {
     <div className="min-h-screen bg-slate-50 p-4 md:p-6 lg:p-8">
       <div className="mx-auto max-w-2xl">
         <Link
-          href="#"
+          href={{ pathname: `/${slug}` }}
           className="mb-8 inline-flex items-center text-sm font-medium text-slate-600 hover:text-slate-900"
         >
           <ChevronLeft className="mr-2 h-4 w-4" />
@@ -101,10 +105,11 @@ export default function CreateFeedback() {
                   rules={{ required: true }}
                   render={({ field }) => (
                     <Select
+                      key={field.value}
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
                       <SelectContent>
@@ -116,6 +121,7 @@ export default function CreateFeedback() {
                     </Select>
                   )}
                 />
+
                 {errors.category && (
                   <p className="text-sm text-red-500">Category is required</p>
                 )}
@@ -148,7 +154,8 @@ export default function CreateFeedback() {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isPending} // Yükleniyorsa disable
+                  disabled={isPending}
+                  isLoading={isPending}
                   className="w-full bg-purple-500 hover:bg-purple-600 sm:w-auto"
                 >
                   {isPending ? 'Adding...' : 'Add Feedback'}
