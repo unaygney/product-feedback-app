@@ -1,3 +1,4 @@
+import bg from '../../public/cznparjtrflllhixgw96.webp'
 import {
   ArrowRight,
   CheckCircle,
@@ -10,9 +11,10 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { auth } from '@/lib/auth'
+import { cn } from '@/lib/utils'
 
 import LogoutButton from '@/components/logout-button'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
 export default async function Home() {
@@ -31,35 +33,43 @@ export default async function Home() {
           </div>
           <nav className="hidden space-x-8 md:flex">
             <Link
-              href="#"
+              href="#features"
               className="text-sm font-medium text-gray-700 hover:text-purple-600"
             >
               Features
             </Link>
             <Link
-              href="#"
-              className="text-sm font-medium text-gray-700 hover:text-purple-600"
-            >
-              Pricing
-            </Link>
-            <Link
-              href="#"
+              href="#community"
               className="text-sm font-medium text-gray-700 hover:text-purple-600"
             >
               Community
             </Link>
-            <Link
-              href="#"
-              className="text-sm font-medium text-gray-700 hover:text-purple-600"
-            >
-              Support
-            </Link>
           </nav>
           <div className="flex items-center gap-4">
+            {session && (
+              <Link
+                className={cn(
+                  buttonVariants({
+                    variant: 'link',
+                  }),
+                  'mr-1'
+                )}
+                href={'/settings'}
+              >
+                Create Product
+              </Link>
+            )}
             {session ? (
               <LogoutButton />
             ) : (
-              <Link prefetch href={'/auth'}>
+              <Link
+                className={cn(
+                  buttonVariants({ variant: 'link' }),
+                  'rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 px-8 py-6 text-lg text-white hover:from-indigo-600 hover:to-purple-600'
+                )}
+                prefetch
+                href={'/auth'}
+              >
                 Login
               </Link>
             )}
@@ -84,24 +94,14 @@ export default async function Home() {
                 Collect, organize and prioritize feedback from your users. Make
                 data-driven decisions and build what matters.
               </p>
-              <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center md:justify-start">
-                <Button className="rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 px-8 py-6 text-lg hover:from-indigo-600 hover:to-purple-600">
-                  Get Started
-                </Button>
-                <Button
-                  variant="outline"
-                  className="rounded-lg border-gray-300 px-8 py-6 text-lg"
-                >
-                  See Demo
-                </Button>
-              </div>
             </div>
             <div className="relative mx-auto w-full max-w-md md:mx-0">
               <div className="aspect-[4/3] overflow-hidden rounded-xl bg-white p-2 shadow-xl">
                 <Image
-                  src="/placeholder.svg?height=600&width=800"
+                  src={bg}
                   alt="Dashboard Preview"
                   width={800}
+                  placeholder="blur"
                   height={600}
                   className="rounded-lg object-cover"
                 />
@@ -113,34 +113,8 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="bg-white py-12">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-gray-900">10k+</p>
-              <p className="mt-2 text-sm text-gray-600">Active Users</p>
-            </div>
-            <div className="text-center">
-              <p className="text-3xl font-bold text-gray-900">50k+</p>
-              <p className="mt-2 text-sm text-gray-600">Feedback Items</p>
-            </div>
-            <div className="text-center">
-              <p className="text-3xl font-bold text-gray-900">99%</p>
-              <p className="mt-2 text-sm text-gray-600">
-                Customer Satisfaction
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-3xl font-bold text-gray-900">24/7</p>
-              <p className="mt-2 text-sm text-gray-600">Support</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Features Section */}
-      <section className="bg-gray-50 py-20">
+      <section id="features" className="bg-gray-50 py-20">
         <div className="mx-auto max-w-6xl px-4">
           <div className="text-center">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
@@ -207,10 +181,6 @@ export default async function Home() {
                     <CheckCircle className="h-5 w-5 text-green-500" />
                     <span>Customizable roadmap</span>
                   </li>
-                  <li className="flex items-center gap-2 text-sm text-gray-600">
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                    <span>Priority scoring algorithms</span>
-                  </li>
                 </ul>
               </div>
             </Card>
@@ -250,7 +220,7 @@ export default async function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="bg-white py-20">
+      <section id="community" className="bg-white py-20">
         <div className="mx-auto max-w-6xl px-4">
           <div className="text-center">
             <h2 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
@@ -274,9 +244,9 @@ export default async function Home() {
                   className="rounded-full"
                 />
                 <div>
-                  <h4 className="font-bold text-gray-900">Sarah Johnson</h4>
+                  <h4 className="font-bold text-gray-900">Tolga Zorlu</h4>
                   <p className="text-sm text-gray-600">
-                    Product Manager at Acme Inc.
+                    Software Engineer at eCatalog
                   </p>
                 </div>
               </div>
@@ -305,8 +275,8 @@ export default async function Home() {
                   className="rounded-full"
                 />
                 <div>
-                  <h4 className="font-bold text-gray-900">Michael Chen</h4>
-                  <p className="text-sm text-gray-600">CTO at TechStart</p>
+                  <h4 className="font-bold text-gray-900">Guney Unay</h4>
+                  <p className="text-sm text-gray-600">Frontend Deveveloper</p>
                 </div>
               </div>
               <div className="mt-4 flex">
@@ -373,9 +343,15 @@ export default async function Home() {
               </p>
             </div>
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-end">
-              <Button className="rounded-lg bg-white px-8 py-6 text-lg text-purple-600 hover:bg-indigo-100">
+              <Link
+                href={'/auth'}
+                className={cn(
+                  buttonVariants({ variant: 'link' }),
+                  'rounded-lg bg-white px-8 py-6 text-lg text-purple-600 hover:bg-indigo-100'
+                )}
+              >
                 Sign Up Free <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -400,7 +376,7 @@ export default async function Home() {
           </div>
           <div className="mt-12 border-t border-gray-800 pt-8 text-center">
             <p className="text-sm">
-              © {new Date().getFullYear()} Frontend Mentor. All rights
+              © {new Date().getFullYear()} Product Feedback App. All rights
               reserved.
             </p>
           </div>

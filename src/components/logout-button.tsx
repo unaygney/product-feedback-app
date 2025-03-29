@@ -13,5 +13,12 @@ export default function LogoutButton() {
     await authClient.signOut()
     router.push('/')
   }
-  return <Button onClick={handleClick}>Logout</Button>
+  return (
+    <Button
+      className="rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 px-8 py-6 text-lg hover:from-indigo-600 hover:to-purple-600"
+      onClick={handleClick}
+    >
+      Logout
+    </Button>
+  )
 }
