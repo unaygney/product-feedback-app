@@ -23,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={jost.className}>
-      <body className="antialiased">
+      <body className="scroll-smooth antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>
