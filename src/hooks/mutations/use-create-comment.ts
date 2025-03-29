@@ -29,7 +29,12 @@ export const useCreateComment = () => {
       })
     },
     onError: (err: unknown) => {
-      toast.error(err as string)
+      if (err instanceof Error) {
+        toast.error(err.message)
+      } else {
+        toast.error('An error occurred while creating the comment.')
+      }
+      console.error('Error creating comment:', err)
     },
   })
 }
