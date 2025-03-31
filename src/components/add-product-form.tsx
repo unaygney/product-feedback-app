@@ -1,169 +1,70 @@
 'use client'
 
-import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowLeft, Plus } from 'lucide-react'
-import Link from 'next/link'
+import { Plus, UserCircle } from 'lucide-react'
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 
+import AddProductForm from '@/components/add-product-form'
+import ProductCardsGrid from '@/components/product-cards-grid'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { Modal } from '@/components/ui/modal'
+import UpdateProfileForm from '@/components/update-profile-form'
 
-const productSchema = z.object({
-  name: z
-    .string()
-    .min(3, { message: 'Name must be at least 3 characters' })
-    .max(100),
-  description: z.string().optional(),
-  logo: z
-    .string()
-    .url({ message: 'Please enter a valid URL' })
-    .optional()
-    .or(z.literal('')),
-  websiteUrl: z
-    .string()
-    .url({ message: 'Please enter a valid URL' })
-    .optional()
-    .or(z.literal('')),
-})
+const mockUser = {
+  id: '1',
+  name: 'John Doe',
+  email: 'john@example.com',
+  image: 'https://github.com/shadcn.png',
+}
 
-type ProductFormValues = z.infer<typeof productSchema>
-
-export default function AddProductForm() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productSchema),
-    defaultValues: {
-      name: '',
-      description: '',
-      logo: '',
-      websiteUrl: '',
-    },
-  })
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = form
-
-  async function onSubmit(data: ProductFormValues) {
-    setIsSubmitting(true)
-
-    try {
-      // Generate slug from name
-      //TODO: implement a slug package
-
-      // Here you would typically make an API call to create the product
-      // For example:
-      // await fetch('/api/products', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ ...data, slug }),
-      // })
-
-      console.log('Product data:', { ...data, slug })
-
-      // Redirect or show success message
-      // router.push('/products')
-    } catch (error) {
-      console.error('Error creating product:', error)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+export default function AddProductPage() {
+  const [showAddProductModal, setShowAddProductModal] = useState(false)
+  const [showProfileModal, setShowProfileModal] = useState(false)
 
   return (
-    <div className="mx-auto max-w-2xl p-6">
-      <div className="mb-8">
-        <Link
-          href="/"
-          className="text-primary flex items-center text-sm hover:underline"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Go back
-        </Link>
-      </div>
-
-      <div className="rounded-lg bg-white p-8 shadow-sm">
-        <div className="mb-8 flex items-center">
-          <div className="bg-primary -mt-12 rounded-full p-3 shadow-md">
-            <Plus className="h-6 w-6 text-white" />
-          </div>
+    <div className="container mx-auto space-y-10 p-4 lg:p-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Your Products</h1>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowProfileModal(true)}
+            className="flex items-center gap-2"
+          >
+            <UserCircle className="h-4 w-4" />
+            Update Profile
+          </Button>
+          <Button
+            onClick={() => setShowAddProductModal(true)}
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Add New Product
+          </Button>
         </div>
-
-        <h1 className="mb-8 text-2xl font-bold">Create New Product</h1>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="name">
-              Product Name <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="name"
-              placeholder="Enter product name"
-              {...register('name')}
-            />
-            {errors.name && (
-              <p className="text-sm text-red-500">{errors.name.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              placeholder="Describe your product"
-              className="min-h-[120px]"
-              {...register('description')}
-            />
-            {errors.description && (
-              <p className="text-sm text-red-500">
-                {errors.description.message}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="logo">Logo URL</Label>
-            <Input
-              id="logo"
-              placeholder="https://example.com/logo.png"
-              {...register('logo')}
-            />
-            {errors.logo && (
-              <p className="text-sm text-red-500">{errors.logo.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="websiteUrl">Website URL</Label>
-            <Input
-              id="websiteUrl"
-              placeholder="https://example.com"
-              {...register('websiteUrl')}
-            />
-            {errors.websiteUrl && (
-              <p className="text-sm text-red-500">
-                {errors.websiteUrl.message}
-              </p>
-            )}
-          </div>
-
-          <div className="flex justify-end space-x-4 pt-4">
-            <Button type="button" variant="outline">
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Adding...' : 'Add Product'}
-            </Button>
-          </div>
-        </form>
       </div>
+
+      <ProductCardsGrid />
+
+      {/* Modal for adding new product */}
+      <Modal
+        showModal={showAddProductModal}
+        setShowModal={setShowAddProductModal}
+        className="p-6"
+      >
+        <AddProductForm />
+      </Modal>
+
+      {/* Modal for updating profile */}
+      <Modal
+        showModal={showProfileModal}
+        setShowModal={setShowProfileModal}
+        className="p-6"
+      >
+        <UpdateProfileForm
+          user={mockUser}
+          onClose={() => setShowProfileModal(false)}
+        />
+      </Modal>
     </div>
   )
 }
