@@ -21,7 +21,14 @@ export const sendEmailRouter = j.router({
           from: 'Product Feedback App <products@guneyunay.com>',
           to: email,
           subject: input.subject || 'Product Feedback App',
-          react: ForgotPassword({ refreshLink }),
+          html: `
+          <h1>Create a new password</h1>
+          <p>We received a request to reset your password. If you made this request, please click the link below to set a new password.</p>
+          <a href="${refreshLink}" target="_blank" style="color: #3b82f6; text-decoration: underline;">Click here to set a new password</a>
+          <p>If you didn't request this, please ignore this email.</p>
+          <p>Thanks,</p>
+          <p>The Product Feedback App Team</p>
+          `,
         })
         if (error) {
           throw new HTTPException(500, {
