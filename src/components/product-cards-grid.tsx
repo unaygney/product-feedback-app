@@ -1,6 +1,5 @@
 'use client'
 
-import { Loader2 } from 'lucide-react'
 import { useState } from 'react'
 
 import { ProductCard } from './product-cart'
@@ -70,7 +69,7 @@ const placeholderProducts = [
 ]
 
 export default function ProductCardsGrid() {
-  const [products, setProducts] = useState<Product[]>(placeholderProducts)
+  const [products] = useState<Product[]>(placeholderProducts)
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
