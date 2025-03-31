@@ -4,7 +4,8 @@ declare global {
       // Server-side only environment variables
       DATABASE_URL: string
       BETTER_AUTH_SECRET: string
-      TURNSTILE_SECRET_KEY
+      TURNSTILE_SECRET_KEY: string
+      RESEND_API_KEY: string
 
       // Client-side accessible environment variables (prefixed with NEXT_PUBLIC_)
       NEXT_PUBLIC_BACKEND_URL: string

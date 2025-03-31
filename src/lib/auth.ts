@@ -2,6 +2,7 @@ import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { captcha } from 'better-auth/plugins'
 
+import { client } from './client'
 import { db } from '@/server/db'
 
 export const auth = betterAuth({
@@ -11,6 +12,13 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
+    sendResetPassword: async ({ user, url }) => {
+      await client.send.forgetPassword.$post({
+        email: user.email,
+        refreshLink: url,
+        subject: 'Product Feedback App | Reset Password',
+      })
+    },
   },
   plugins: [
     captcha({

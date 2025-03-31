@@ -11,6 +11,16 @@ const nextConfig = {
     typedRoutes: true,
     authInterrupts: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'wsrv.nl',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+  },
 }
 
 export default nextConfig
