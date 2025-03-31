@@ -1,4 +1,3 @@
-import ForgotPassword from '../../components/emails/forgot-password'
 import { j, publicProcedure } from '../jstack'
 import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
