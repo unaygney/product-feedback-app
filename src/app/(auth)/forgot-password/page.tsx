@@ -2,7 +2,6 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
@@ -54,6 +53,7 @@ export default function ForgotPassword() {
       }
       toast.success('Password reset email has been sent successfully.')
     } catch (error) {
+      console.error('Error sending password reset email:', error)
       toast.error('Something went wrong. Please try again.')
     }
   }

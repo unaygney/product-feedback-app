@@ -61,6 +61,7 @@ export default function ResetPasswordPage(props: {
       toast.success('Password has been successfully reset.')
       router.push('/auth?tab=login')
     } catch (error) {
+      console.error('Error resetting password:', error)
       toast.error('Password reset failed, please try again.')
     }
   }

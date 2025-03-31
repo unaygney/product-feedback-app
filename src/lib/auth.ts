@@ -12,7 +12,7 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
-    sendResetPassword: async ({ user, url, token }, request) => {
+    sendResetPassword: async ({ user, url }) => {
       await client.send.forgetPassword.$post({
         email: user.email,
         refreshLink: url,
