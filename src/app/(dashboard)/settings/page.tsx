@@ -17,6 +17,14 @@ export default function AddProductPage() {
 
   const { data: user, refetch } = authClient.useSession()
 
+  if (!user) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <h1 className="text-2xl font-bold">Please log in to view this page</h1>
+      </div>
+    )
+  }
+
   return (
     <div className="container mx-auto space-y-10 p-4 lg:p-8">
       <div className="flex items-center justify-between">
@@ -58,7 +66,7 @@ export default function AddProductPage() {
         className="p-6"
       >
         <UpdateProfileForm
-          user={user?.user!}
+          user={user?.user}
           refetch={refetch}
           onClose={() => setShowProfileModal(false)}
         />

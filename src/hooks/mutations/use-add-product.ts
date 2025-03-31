@@ -28,7 +28,7 @@ export const useAddProduct = () => {
         websiteUrl: websiteUrl ?? undefined,
       })
     },
-    onSuccess: async (_, variables) => {
+    onSuccess: async () => {
       toast.success('Comment created successfully!')
       await queryClient.invalidateQueries({
         queryKey: ['products'],

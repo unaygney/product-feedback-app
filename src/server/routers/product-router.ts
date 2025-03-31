@@ -2,7 +2,6 @@ import { product } from '../db/schema'
 import { j, privateProcedure, publicProcedure } from '../jstack'
 import { eq } from 'drizzle-orm'
 import { HTTPException } from 'hono/http-exception'
-import slugify from 'slugify'
 import { z } from 'zod'
 
 export const productRouter = j.router({

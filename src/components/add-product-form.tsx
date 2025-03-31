@@ -1,6 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import Image from 'next/image'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import slugify from 'slugify'
@@ -70,6 +71,8 @@ export default function AddProductForm({ onClose }: AddProductFormProps) {
   const { mutateAsync } = useAddProduct()
   const logoUrl = watch('logo')
 
+  const logo = `https://wsrv.nl/?url=${encodeURIComponent(logoUrl || '')}`
+
   async function onSubmit(data: ProductFormValues) {
     setIsSubmitting(true)
 
@@ -104,10 +107,11 @@ export default function AddProductForm({ onClose }: AddProductFormProps) {
       {logoUrl && (
         <div className="mb-6 flex justify-center">
           <div className="h-24 w-24 overflow-hidden rounded-md border">
-            <img
-              src={logoUrl || '/placeholder.svg'}
+            <Image
+              src={logo || '/placeholder.svg'}
               alt="Product logo preview"
               className="h-full w-full object-cover"
+              fill
             />
           </div>
         </div>
