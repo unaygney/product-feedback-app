@@ -46,7 +46,7 @@ const appRouter = j.mergeRouters(api, {
   upvote: upvoteRouter,
   product: productRouter,
   comment: commentRouter,
-  // send: sendEmailRouter,
+  send: sendEmailRouter,
 })
 
 export type AppRouter = typeof appRouter

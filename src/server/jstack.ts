@@ -3,6 +3,7 @@ import { drizzle } from 'drizzle-orm/neon-http'
 import { env } from 'hono/adapter'
 import { HTTPException } from 'hono/http-exception'
 import { jstack } from 'jstack'
+import { Resend } from 'resend'
 
 import { auth } from '@/lib/auth'
 
@@ -10,7 +11,7 @@ import * as relationsImport from '@/server/db/relations'
 import * as schemaImport from '@/server/db/schema'
 
 interface Env {
-  Bindings: { DATABASE_URL: string }
+  Bindings: { DATABASE_URL: string; RESEND_API_KEY: string }
 }
 
 export const j = jstack.init<Env>()
@@ -28,6 +29,25 @@ const databaseMiddleware = j.middleware(async ({ c, next }) => {
   const db = drizzle(sql, { schema })
 
   return await next({ db })
+})
+
+/**
+ * Resend email service
+ *
+ */
+const resendMiddleware = j.middleware(async ({ c, next }) => {
+  const { RESEND_API_KEY } = env(c)
+
+  if (!RESEND_API_KEY) {
+    console.error('RESEND_API_KEY is not defined in environment bindings.')
+    throw new HTTPException(503, {
+      message: 'Email service API key is not configured.',
+    })
+  }
+
+  const resend = new Resend(RESEND_API_KEY)
+
+  return await next({ resend })
 })
 
 /**
@@ -52,7 +72,9 @@ const authMiddleware = j.middleware(async ({ c, next }) => {
  *
  * This is the base piece you use to build new queries and mutations on your API.
  */
-export const publicProcedure = j.procedure.use(databaseMiddleware)
+export const publicProcedure = j.procedure
+  .use(databaseMiddleware)
+  .use(resendMiddleware)
 
 /**
  * Private (authenticated) procedures
