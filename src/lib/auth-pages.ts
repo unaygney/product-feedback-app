@@ -5,7 +5,7 @@
  */
 
 export const isRequestedAuthPage = (pathname: string) => {
-  const authPages = ['/auth']
+  const authPages = ['/auth', '/forgot-password', '/reset-password']
   return authPages.some((page) => pathname.startsWith(page))
 }
 

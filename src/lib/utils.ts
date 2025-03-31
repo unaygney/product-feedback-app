@@ -29,3 +29,10 @@ export const getTypeBg = (type: string) => {
       return 'bg-gray-100 text-gray-700'
   }
 }
+export function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date(date))
+}

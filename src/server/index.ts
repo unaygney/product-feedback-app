@@ -5,6 +5,7 @@ import { auth } from '@/lib/auth'
 import { j } from './jstack'
 import { commentRouter } from './routers/comment-router'
 import { productRouter } from './routers/product-router'
+import { sendEmailRouter } from './routers/send-email'
 import { suggeestionRouter } from './routers/suggestion-router'
 import { upvoteRouter } from './routers/upvote-router'
 import { userRouter } from './routers/user-router'
@@ -45,6 +46,7 @@ const appRouter = j.mergeRouters(api, {
   upvote: upvoteRouter,
   product: productRouter,
   comment: commentRouter,
+  send: sendEmailRouter,
 })
 
 export type AppRouter = typeof appRouter

@@ -24,3 +24,22 @@ export const useProduct = (slug: string) => {
 
   return { product, isLoading, isError }
 }
+export const useProducts = () => {
+  const {
+    data: products,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      try {
+        const response = await client.product.getProducts.$get()
+        return await response.json()
+      } catch (error) {
+        console.error('Error fetching products:', error)
+        throw error
+      }
+    },
+  })
+  return { products, isLoading, isError }
+}
