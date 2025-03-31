@@ -3,23 +3,19 @@
 import { Plus, UserCircle } from 'lucide-react'
 import { useState } from 'react'
 
+import { authClient } from '@/lib/auth-client'
+
 import AddProductForm from '@/components/add-product-form'
 import ProductCardsGrid from '@/components/product-cards-grid'
 import { Button } from '@/components/ui/button'
 import { Modal } from '@/components/ui/modal'
 import UpdateProfileForm from '@/components/update-profile-form'
 
-// Mock user data - in a real app, you would fetch this from your auth provider
-const mockUser = {
-  id: '1',
-  name: 'John Doe',
-  email: 'john@example.com',
-  image: 'https://github.com/shadcn.png',
-}
-
 export default function AddProductPage() {
   const [showAddProductModal, setShowAddProductModal] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState(false)
+
+  const { data: user, refetch } = authClient.useSession()
 
   return (
     <div className="container mx-auto space-y-10 p-4 lg:p-8">
@@ -62,7 +58,8 @@ export default function AddProductPage() {
         className="p-6"
       >
         <UpdateProfileForm
-          user={mockUser}
+          user={user?.user!}
+          refetch={refetch}
           onClose={() => setShowProfileModal(false)}
         />
       </Modal>

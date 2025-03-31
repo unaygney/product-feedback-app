@@ -1,6 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { User } from 'better-auth'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -9,6 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+
+import { useUpdateUser } from '@/hooks'
 
 const profileSchema = z.object({
   name: z
@@ -25,18 +28,15 @@ const profileSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileSchema>
 
 interface UpdateProfileFormProps {
-  user?: {
-    id: string
-    name: string
-    email: string
-    image?: string | null
-  }
+  user: User
   onClose?: () => void
+  refetch?: () => void
 }
 
 export default function UpdateProfileForm({
   user,
   onClose,
+  refetch,
 }: UpdateProfileFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -55,23 +55,25 @@ export default function UpdateProfileForm({
     formState: { errors },
   } = form
 
+  const { mutateAsync } = useUpdateUser()
+
   const imageUrl = watch('image')
 
   async function onSubmit(data: ProfileFormValues) {
     setIsSubmitting(true)
 
     try {
-      // Here you would typically make an API call to update the user profile
-      // For example:
-      // await fetch('/api/user/profile', {
-      //   method: 'PATCH',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(data),
-      // })
+      await mutateAsync({
+        name: data.name,
+        image: data.image || '',
+      })
+      refetch?.()
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      alert('Error updating profile')
+    }
 
-      console.log('Profile updated:', data)
-
-      // Close the modal after successful update
+    try {
       if (onClose) {
         onClose()
       }

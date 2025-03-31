@@ -1,6 +1,7 @@
 import { CalendarIcon, Globe } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 import { formatDate } from '@/lib/utils'
 
@@ -19,13 +20,27 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const router = useRouter()
+  const logo = product.logo
+    ? `https://wsrv.nl/?url=${encodeURIComponent(product.logo)}`
+    : '/placeholder.png'
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement
+    const isLink = target.closest('a')
+
+    if (!isLink) {
+      router.push(`/${product.slug}`)
+    }
+  }
+
   return (
-    <Card className="overflow-hidden">
+    <Card className="cursor-pointer overflow-hidden" onClick={handleCardClick}>
       <CardHeader className="p-0">
         <div className="bg-muted relative h-48 w-full">
           {product.logo ? (
             <Image
-              src={product.logo || '/placeholder.svg'}
+              src={logo}
               alt={product.name}
               fill
               className="object-cover"
