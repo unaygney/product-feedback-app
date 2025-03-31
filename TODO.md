@@ -1,8 +1,7 @@
-0. Add email flow
-1. genereta dynamic metadata with user data. ( postponed )
-2. lastly add user settinngs page.
-3. genereta a Product list page to show all product belong to the user
-4. Roadmap back button doesn't work . so fix that
+1. create endpoints update profile and products data.
+2. links update-profile-form and product-cart to real data. update or get
 
-- user add product this page
-- user add user logo in this page
+---
+
+1. lastly add user settinngs page.
+2. Roadmap back button doesn't work . so fix that
