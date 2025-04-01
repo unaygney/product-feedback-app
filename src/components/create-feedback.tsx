@@ -49,7 +49,10 @@ export default function CreateFeedback({ slug }: { slug: string }) {
   })
 
   const onSubmit = (data: CreateSuggestionInput) => {
-    createPost(data)
+    createPost({
+      ...data,
+      productSlug: slug,
+    })
   }
 
   return (
