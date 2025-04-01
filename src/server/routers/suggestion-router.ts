@@ -3,30 +3,32 @@ import { eq } from 'drizzle-orm'
 import { HTTPException } from 'hono/http-exception'
 import { z } from 'zod'
 
-import { createSuggestionSchema } from '@/lib/form-schemas'
+import {
+  createSuggestionSchema,
+  updateSuggestionSchema,
+} from '@/lib/form-schemas'
 
 import { suggestion } from '@/server/db/schema'
 
 export const suggeestionRouter = j.router({
   create: privateProcedure
-    .input(createSuggestionSchema)
+    .input(
+      createSuggestionSchema.extend({
+        productSlug: z.string(),
+      })
+    )
     .mutation(async ({ ctx, c, input }) => {
-      const { category, description, title } = input
+      const { category, description, title, productSlug } = input
       const { db, user } = ctx
 
-      const url = c.req.url
-      const parts = url.split('/')
-
-      const slug = parts[3]
-
-      if (!slug) {
+      if (!productSlug) {
         throw new HTTPException(400, {
           message: 'Product slug is required in the URL.',
         })
       }
 
       const product = await db.query.product.findFirst({
-        where: (p, { eq }) => eq(p.slug, slug),
+        where: (p, { eq }) => eq(p.slug, productSlug),
       })
 
       if (!product) {
@@ -87,7 +89,7 @@ export const suggeestionRouter = j.router({
     .input(
       z.object({
         suggestionId: z.string().uuid(),
-        content: createSuggestionSchema,
+        content: updateSuggestionSchema,
       })
     )
     .mutation(async ({ ctx, c, input }) => {
