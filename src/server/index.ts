@@ -27,6 +27,7 @@ const api = j
         'http://localhost:8080',
         'https://product-feedback-app-pied.vercel.app',
         'https://97aa9034-product-feedback-app.bery.workers.dev',
+        'https://product-feedback.guneyunay.com',
       ],
       allowHeaders: ['x-is-superjson', 'Content-Type', 'Authorization'],
       exposeHeaders: ['x-is-superjson', 'Content-Length'],
