@@ -14,8 +14,19 @@ export const suggeestionRouter = j.router({
       const { category, description, title } = input
       const { db, user } = ctx
 
+      const url = c.req.url
+      const parts = url.split('/')
+
+      const slug = parts[1]
+
+      if (!slug) {
+        throw new HTTPException(400, {
+          message: 'Product slug is required in the URL.',
+        })
+      }
+
       const product = await db.query.product.findFirst({
-        where: (p, { eq }) => eq(p.ownerId, user.id),
+        where: (p, { eq }) => eq(p.slug, slug),
       })
 
       if (!product) {
@@ -41,7 +52,6 @@ export const suggeestionRouter = j.router({
 
       return c.superjson('Suggestion created!', 201)
     }),
-
   get: publicProcedure
     .input(
       z.object({
