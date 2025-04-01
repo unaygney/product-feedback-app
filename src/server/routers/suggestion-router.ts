@@ -17,7 +17,7 @@ export const suggeestionRouter = j.router({
       const url = c.req.url
       const parts = url.split('/')
 
-      const slug = parts[1]
+      const slug = parts[3]
 
       if (!slug) {
         throw new HTTPException(400, {
