@@ -21,7 +21,7 @@ export default function RoadmapBoard() {
                 size="icon"
                 className="h-8 w-8 text-white hover:bg-blue-800"
                 //TODO: Implement navigation to productName
-                onClick={() => router.push('/test')}
+                onClick={() => router.push('/')}
               >
                 <ArrowLeft className="h-4 w-4" />
               </Button>

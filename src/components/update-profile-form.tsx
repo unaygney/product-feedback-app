@@ -70,7 +70,6 @@ export default function UpdateProfileForm({
       refetch?.()
     } catch (error) {
       console.error('Error updating profile:', error)
-      alert('Error updating profile')
     }
 
     try {

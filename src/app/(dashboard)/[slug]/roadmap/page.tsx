@@ -70,7 +70,6 @@ export default function RoadmapPage({
   const [columns, setColumns] = useState<KanbanColumn[]>([])
   const [items, setItems] = useState<Record<string, KanbanItem>>({})
 
-  // Mutation hook: status güncellemesi için kullanılıyor.
   const updateStatusMutation = useUpdateSuggestionStatus()
 
   useEffect(() => {
@@ -211,8 +210,6 @@ export default function RoadmapPage({
           },
         }))
 
-        // Optimistic mutation: sunucuya güncelleme isteği gönderiliyor.
-        // Hata durumunda snapshot ile rollback yapılır.
         updateStatusMutation.mutate(
           {
             suggestionId: activeIdLocal,
@@ -308,6 +305,7 @@ export default function RoadmapPage({
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-white hover:bg-blue-800"
+                onClick={() => router.push(`/${slug}`)}
               >
                 <ArrowLeft className="h-4 w-4" />
               </Button>
