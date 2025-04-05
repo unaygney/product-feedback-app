@@ -122,7 +122,6 @@ export const suggeestionRouter = j.router({
     .input(
       z.object({
         suggestionId: z.string().uuid(),
-
         newStatus: z.enum(['planned', 'in-progress', 'live']),
       })
     )
@@ -132,15 +131,18 @@ export const suggeestionRouter = j.router({
 
       const suggestionToUpdate = await db.query.suggestion.findFirst({
         where: (s, { eq }) => eq(s.id, suggestionId),
+        with: {
+          product: true,
+        },
       })
 
       if (!suggestionToUpdate) {
         throw new HTTPException(404, { message: 'Suggestion not found' })
       }
 
-      if (user.id !== suggestionToUpdate.userId) {
+      if (user.id !== suggestionToUpdate.product.ownerId) {
         throw new HTTPException(403, {
-          message: 'You are not allowed to update this suggestion',
+          message: 'You are not allowed to update this suggestion status',
         })
       }
 
