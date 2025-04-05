@@ -88,6 +88,12 @@ export default function AddProductForm({ onClose }: AddProductFormProps) {
       if (onClose) {
         onClose()
       }
+      form.reset({
+        name: '',
+        description: '',
+        logo: '',
+        websiteUrl: '',
+      })
     } catch (error) {
       console.error('Error adding product:', error)
     } finally {
@@ -106,7 +112,7 @@ export default function AddProductForm({ onClose }: AddProductFormProps) {
 
       {logoUrl && (
         <div className="mb-6 flex justify-center">
-          <div className="h-24 w-24 overflow-hidden rounded-md border">
+          <div className="relative h-24 w-24 overflow-hidden rounded-md border">
             <Image
               src={logo || '/placeholder.svg'}
               alt="Product logo preview"
